@@ -17,6 +17,7 @@ private:
     std::vector<int> registers;
     std::vector<int> program;
     int accumulator;
+    const int regNum = 8;
 
     void executeInstruction(int &pc);
 };

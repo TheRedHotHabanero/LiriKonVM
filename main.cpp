@@ -1,5 +1,4 @@
 #include "interpreter.h"
-#include <iostream>
 
 int main() {
     Interpreter interpreter;
