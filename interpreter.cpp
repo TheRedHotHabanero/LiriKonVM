@@ -17,7 +17,7 @@ Interpreter::~Interpreter() {
 }
 
 void Interpreter::loadProgram(const std::string &filename) {
-    std::ifstream file(filename, std::ios::binary);
+    std::ifstream file(filename);
     if (!file.is_open()) {
         std::cerr << "Error: Unable to open the program file." << std::endl;
         exit(1);
@@ -26,74 +26,99 @@ void Interpreter::loadProgram(const std::string &filename) {
     std::string line;
     while (std::getline(file, line)) {
         std::istringstream iss(line);
-        OpCode instruction = OpCode::INVALID;
+        std::string word;
+        while (iss >> word) {
+            int instruction = static_cast<int>(OpCode::INVALID);
 
-        // stupid parsing. will be changed to map
-        if (line == "ADD") {
-            instruction = OpCode::ADD;
-        } else if (line == "SUB") {
-            instruction = OpCode::SUB;
-        } else if(line == "MUL") {
-            instruction = OpCode::MUL;
-        } else if(line == "DIV") {
-            instruction = OpCode::DIV;
-        } else if(line == "AND") {
-            instruction = OpCode::AND;
-        } else if(line == "OR") {
-            instruction = OpCode::OR;
-        } else if(line == "XOR") {
-            instruction = OpCode::XOR;
-        } else if(line == "SHL") {
-            instruction = OpCode::SHL;
-        } else if(line == "SHR") {
-            instruction = OpCode::SHR;
-        } else if(line == "ASHR") {
-            instruction = OpCode::ASHR;
-        } else if(line == "ASHL") {
-            instruction = OpCode::ASHL;
-        } else if(line == "NEG") {
-            instruction = OpCode::NEG;
-        } else if(line == "MOV_IMM_TO_REG") {
-            instruction = OpCode::MOV_IMM_TO_REG;
-        } else if(line == "MOV_REG_TO_ACC") {
-            instruction = OpCode::MOV_REG_TO_ACC;
-        } else if(line == "INPUT") {
-            instruction = OpCode::INPUT;
-        } else if(line == "OUTPUT") {
-            instruction = OpCode::OUTPUT;
-        } else if(line == "HALT") {
-            instruction = OpCode::HALT;
-        } else if(line == "SIN") {
-            instruction = OpCode::SIN;
-        } else if(line == "COS") {
-            instruction = OpCode::COS;
-        } else if(line == "SQRT") {
-            instruction = OpCode::SQRT;
-        } else {
-            std::cerr << "Error: Invalid instruction format in input file." << std::endl;
-            break;
+            // Преобразование слова в инструкцию
+            if (word == "ADD") {
+                instruction = static_cast<int>(OpCode::ADD);
+            } else if (word == "SUB") {
+                instruction = static_cast<int>(OpCode::SUB);
+            } else if (word == "MUL") {
+                instruction = static_cast<int>(OpCode::MUL);
+            } else if (word == "DIV") {
+                instruction = static_cast<int>(OpCode::DIV);
+            } else if (word == "AND") {
+                instruction = static_cast<int>(OpCode::AND);
+            } else if (word == "OR") {
+                instruction = static_cast<int>(OpCode::OR);
+            } else if (word == "XOR") {
+                instruction = static_cast<int>(OpCode::XOR);
+            } else if (word == "SHL") {
+                instruction = static_cast<int>(OpCode::SHL);
+            } else if (word == "SHR") {
+                instruction = static_cast<int>(OpCode::SHR);
+            } else if (word == "ASHR") {
+                instruction = static_cast<int>(OpCode::ASHR);
+            } else if (word == "ASHL") {
+                instruction = static_cast<int>(OpCode::ASHL);
+            } else if (word == "NEG") {
+                instruction = static_cast<int>(OpCode::NEG);
+            } else if (word == "MOV_IMM_TO_REG") {
+                instruction = static_cast<int>(OpCode::MOV_IMM_TO_REG);
+            } else if (word == "MOV_REG_TO_ACC") {
+                instruction = static_cast<int>(OpCode::MOV_REG_TO_ACC);
+            } else if (word == "INPUT") {
+                instruction = static_cast<int>(OpCode::INPUT);
+            } else if (word == "OUTPUT") {
+                instruction = static_cast<int>(OpCode::OUTPUT);
+            } else if (word == "HALT") {
+                instruction = static_cast<int>(OpCode::HALT);
+            } else if (word == "SIN") {
+                instruction = static_cast<int>(OpCode::SIN);
+            } else if (word == "COS") {
+                instruction = static_cast<int>(OpCode::COS);
+            } else if (word == "SQRT") {
+                instruction = static_cast<int>(OpCode::SQRT);
+            } else if (word == "r0") {
+                instruction = static_cast<int>(Cells::R0);
+            } else if (word == "r1") {
+                instruction = static_cast<int>(Cells::R1);
+            } else if (word == "r2") {
+                instruction = static_cast<int>(Cells::R2);
+            } else if (word == "r3") {
+                instruction = static_cast<int>(Cells::R3);
+            } else if (word == "r4") {
+                instruction = static_cast<int>(Cells::R4);
+            } else if (word == "r5") {
+                instruction = static_cast<int>(Cells::R5);
+            } else if (word == "r6") {
+                instruction = static_cast<int>(Cells::R6);
+            } else if (word == "r7") {
+                instruction = static_cast<int>(Cells::R7);
+            } else if (word == "IMM") {
+                instruction = static_cast<int>(Cells::IMM);
+            } else if (word == "ACC") {
+                instruction = static_cast<int>(Cells::ACC);
+            } else {
+                std::cerr << "Error: Invalid instruction format in input file." << std::endl;
+                std::cout << word << std::endl;
+                exit(1);
+            }
+            program.push_back(instruction);
         }
-        program.push_back(static_cast<int>(instruction));
     }
 
     file.close(); // Закрываем файл после чтения
 }
 
+
 void Interpreter::executeProgram() {
     int pc = 0;
     while (pc < program.size()) {
         executeInstruction(pc);
+        pc++;
     }
 }
 
 void Interpreter::executeInstruction(int &pc) {
-    OpCode opcode = static_cast<OpCode>(program[pc++]);
-    int operand = program[pc++];
+    OpCode opcode = static_cast<OpCode>(program[pc]);
+    int operand = program[pc];
 
     switch (opcode) {
         case OpCode::ADD:
             accumulator += registers[operand];
-            std::cout << accumulator << std::endl;
             break;
         case OpCode::SUB:
             accumulator -= registers[operand];
@@ -140,19 +165,24 @@ void Interpreter::executeInstruction(int &pc) {
             accumulator = std::cos(accumulator);
             break;
         case OpCode::MOV_REG_TO_ACC:
+            std::cout << "in mov reg to acc. " << std::endl;
             accumulator = registers[operand];
             break;
         case OpCode::MOV_IMM_TO_REG:
             registers[operand] = operand;
             break;
         case OpCode::INPUT:
+            std::cout << "in input. " << std::endl;
             int input;
             std::cin >> input;
-            registers[operand] = input;
+            accumulator = input;
             break;
         case OpCode::OUTPUT:
-            std::cout << registers[operand] << std::endl;
+            std::cout << "in output. " << std::endl;
+            std::cout << accumulator << std::endl;
             break;
+        case OpCode::HALT:
+            return;
         default:
             std::cerr << "Error: Unknown opcode " << static_cast<int>(opcode) << std::endl;
             exit(1);
