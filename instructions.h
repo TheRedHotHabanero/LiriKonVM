@@ -2,8 +2,7 @@
 
 // Define bytecode instructions
 // TODO: add different types
-enum class OpCode {
-    INVALID,
+enum class OpCode: uint64_t {
     ADD, // acc = (acc + vs) % 2^32
     SUB, // acc = (acc - vs) % 2^32
     MUL, // acc = (acc * vs) % 2^32
@@ -14,19 +13,20 @@ enum class OpCode {
     SHL, // acc = (vs1 << (vs2 & 0x1f)) % 2^32
     SHR, // acc = vs1 >> (vs2 & 0x1f)
     ASHR, // acc = (vs1 < 0) ? ~(~vs1 >> vs2 & 0x1f) : vs1 >> vs2 & 0x1f
-    ASHL,
+    ASHL, // same to the left
     NEG, // acc = -acc
     MOV_IMM_TO_REG, // move integer immediate into a register.
     MOV_REG_TO_ACC,
     INPUT, // IO intrinsic - input
     OUTPUT, // // IO intrinsic - output
-    HALT,
-    SIN,
-    COS,
-    SQRT,
+    HALT, // return
+    SIN, // help with math functions :)
+    COS, // help with math functions :)
+    SQRT, // help with math functions :)
+    INVALID,
 };
 
-enum class Cells {
+enum class Cells: uint64_t {
     R0,
     R1,
     R2,
