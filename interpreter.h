@@ -19,8 +19,6 @@ private:
     const int regNum = 8;
 
     void executeInstruction(uint64_t &pc);
-
-    // void executeInstruction(int &pc);
 };
 
 #endif // INTERPRETER_H

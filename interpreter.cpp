@@ -8,7 +8,7 @@
 #include "instructions.h"
 
 Interpreter::Interpreter() {
-    registers.resize(regNum, 0); // 8 registers
+    registers.resize(regNum, 0);
     accumulator = 0;
 }
 
@@ -28,79 +28,22 @@ void Interpreter::loadProgram(const std::string &filename) {
         std::istringstream iss(line);
         std::string word;
         while (iss >> word) {
-            uint64_t instruction = static_cast<uint64_t>(OpCode::INVALID);
-
-            // Преобразование слова в инструкцию
-            if (word == "ADD") {
-                instruction = static_cast<uint64_t>(OpCode::ADD);
-            } else if (word == "SUB") {
-                instruction = static_cast<uint64_t>(OpCode::SUB);
-            } else if (word == "MUL") {
-                instruction = static_cast<uint64_t>(OpCode::MUL);
-            } else if (word == "DIV") {
-                instruction = static_cast<uint64_t>(OpCode::DIV);
-            } else if (word == "AND") {
-                instruction = static_cast<uint64_t>(OpCode::AND);
-            } else if (word == "OR") {
-                instruction = static_cast<uint64_t>(OpCode::OR);
-            } else if (word == "XOR") {
-                instruction = static_cast<uint64_t>(OpCode::XOR);
-            } else if (word == "SHL") {
-                instruction = static_cast<uint64_t>(OpCode::SHL);
-            } else if (word == "SHR") {
-                instruction = static_cast<uint64_t>(OpCode::SHR);
-            } else if (word == "ASHR") {
-                instruction = static_cast<uint64_t>(OpCode::ASHR);
-            } else if (word == "ASHL") {
-                instruction = static_cast<uint64_t>(OpCode::ASHL);
-            } else if (word == "NEG") {
-                instruction = static_cast<uint64_t>(OpCode::NEG);
-            } else if (word == "MOV_IMM_TO_REG") {
-                instruction = static_cast<uint64_t>(OpCode::MOV_IMM_TO_REG);
-            } else if (word == "MOV_REG_TO_ACC") {
-                instruction = static_cast<uint64_t>(OpCode::MOV_REG_TO_ACC);
-            } else if (word == "INPUT") {
-                instruction = static_cast<uint64_t>(OpCode::INPUT);
-            } else if (word == "OUTPUT") {
-                instruction = static_cast<uint64_t>(OpCode::OUTPUT);
-            } else if (word == "HALT") {
-                instruction = static_cast<uint64_t>(OpCode::HALT);
-            } else if (word == "SIN") {
-                instruction = static_cast<uint64_t>(OpCode::SIN);
-            } else if (word == "COS") {
-                instruction = static_cast<uint64_t>(OpCode::COS);
-            } else if (word == "SQRT") {
-                instruction = static_cast<uint64_t>(OpCode::SQRT);
-            } else if (word == "r0") {
-                instruction = static_cast<uint64_t>(Cells::R0);
-            } else if (word == "r1") {
-                instruction = static_cast<uint64_t>(Cells::R1);
-            } else if (word == "r2") {
-                instruction = static_cast<uint64_t>(Cells::R2);
-            } else if (word == "r3") {
-                instruction = static_cast<uint64_t>(Cells::R3);
-            } else if (word == "r4") {
-                instruction = static_cast<uint64_t>(Cells::R4);
-            } else if (word == "r5") {
-                instruction = static_cast<uint64_t>(Cells::R5);
-            } else if (word == "r6") {
-                instruction = static_cast<uint64_t>(Cells::R6);
-            } else if (word == "r7") {
-                instruction = static_cast<uint64_t>(Cells::R7);
-            } else if (word == "IMM") {
-                instruction = static_cast<uint64_t>(Cells::IMM);
-            } else if (word == "ACC") {
-                instruction = static_cast<uint64_t>(Cells::ACC);
-            } else {
-                std::cerr << "Error: Invalid instruction format in input file." << std::endl;
-                std::cout << word << std::endl;
-                exit(1);
+            OpCode opcode = instructions_map[word];
+            Cells cell = cells_map[word];
+            if (instructions_map.find(word) != instructions_map.end()) {
+                program.push_back(static_cast<uint64_t>(opcode));
             }
-            program.push_back(instruction);
+            if (cells_map.find(word) != cells_map.end()) {
+                registers.push_back(static_cast<uint64_t>(cell));
+                program.push_back(static_cast<uint64_t>(cell));
+            } //else {
+                //std::cerr << "Error: Invalid instruction `"<< word << "` in input file." << std::endl;
+                //exit(1);
+            //}
         }
     }
 
-    file.close(); // Закрываем файл после чтения
+    file.close();
 }
 
 void Interpreter::executeProgram() {
@@ -112,6 +55,18 @@ void Interpreter::executeProgram() {
         curr_inst += 1;
     }
 }
+
+int getRegisterIndex(const std::string& registerName) {
+    // Например, если регистры имеют имена "r0", "r1", и так далее,
+    // то можно извлечь номер регистра из строки.
+
+    // Пример логики для регистров "r0", "r1", "r2" и так далее:
+    if (registerName[0] == 'r' && registerName.size() > 1) {
+        return std::stoi(registerName.substr(1));
+    }
+    return 0;
+}
+
 
 void Interpreter::executeInstruction(uint64_t &pc) {
 
@@ -213,7 +168,8 @@ HANDLE_INPUT:
     std::cout << "in input. " << std::endl;
     uint64_t input;
     std::cin >> input;
-    accumulator = input;
+    // accumulator = input;
+    registers[operand] = input;
     operand = program[++pc];
     goto *dispatch_table[operand];
 HANDLE_OUTPUT:
