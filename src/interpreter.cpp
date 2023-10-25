@@ -8,10 +8,7 @@
 #include "../isa/instructions.h"
 #include "../include/vm.h"
 
-Interpreter::Interpreter() {
-    registers.resize(regNum, 0);
-    accumulator = 0;
-}
+Interpreter::Interpreter() {};
 
 Interpreter::~Interpreter() {}
 
@@ -98,14 +95,14 @@ void Interpreter::loadProgram(const std::string &filename) {
     file.close();
 }
 
-void Interpreter::executeProgram() {
-    uint64_t curr_inst = 0;
-    uint64_t pc = 0;
-    uint64_t size = program.size();
-    while (curr_inst < size) {
-        executeInstruction(pc);
-        curr_inst += 1;
-    }
+void Interpreter::executeProgram([[maybe_unused]] Byte *bytecode) {
+    // uint64_t curr_inst = 0;
+    // uint64_t pc = 0;
+    // uint64_t size = program.size();
+    // while (curr_inst < size) {
+    //     executeInstruction(pc);
+    //     curr_inst += 1;
+    // }
 }
 
 int getRegisterIndex(const std::string &registerName) {
@@ -115,8 +112,9 @@ int getRegisterIndex(const std::string &registerName) {
     return 0;
 }
 
-void Interpreter::executeInstruction(uint64_t &pc) {
+// void Interpreter::executeInstruction(uint64_t &pc) {
 
+Instr executeInstruction([[maybe_unused]] Byte *bytecode, interpreter::Reg pc);
     static void *dispatch_table[] = {&&HANDLE_ADD,
                                      &&HANDLE_SUB,
                                      &&HANDLE_MUL,

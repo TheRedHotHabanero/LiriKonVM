@@ -4,21 +4,21 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include "decoder.h"
+#include "runner.h"
+#include "vm.h"
 
 class Interpreter final {
   public:
     Interpreter();
     void loadProgram(const std::string &filename);
-    void executeProgram();
+    interpreter::Instr executeInstruction(interpreter::Byte *bytecode, interpreter::Reg pc);
+    void executeProgram(interpreter::Byte *bytecode);
     ~Interpreter();
 
   private:
-    std::vector<uint64_t> registers;
-    std::vector<uint64_t> program;
-    int accumulator;
-    const int regNum = 8;
-
-    void executeInstruction(uint64_t &pc);
+    Decoder *decoder_;
+    Runner *runner_;
 };
 
 #endif // INCLUDE_INTERPRETER_H
