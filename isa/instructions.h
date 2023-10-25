@@ -3,7 +3,7 @@
 
 #include <unordered_map>
 
-enum class OpCode: uint64_t {
+enum class OpCode : uint64_t {
     // Arithmetical
     ADD,
     SUB,
@@ -34,11 +34,10 @@ enum class OpCode: uint64_t {
     COS,
     SQRT,
 
-
     INVALID,
 };
 
-enum class IRegisters: uint64_t {
+enum class IRegisters : uint64_t {
     ACC = 0x0,
     R0 = 0x1,
     R1 = 0x2,
@@ -50,7 +49,7 @@ enum class IRegisters: uint64_t {
     R7 = 0x8,
 };
 
-enum class FRegisters: uint64_t {
+enum class FRegisters : uint64_t {
     FACC = 0x0,
     FR0 = 0x1,
     FR1 = 0x2,
@@ -62,7 +61,7 @@ enum class FRegisters: uint64_t {
     FR7 = 0x8,
 };
 
-std::unordered_map<std::string, OpCode> instructions_map {
+std::unordered_map<std::string, OpCode> instructions_map{
     {"ADD", OpCode::ADD},
     {"SUB", OpCode::SUB},
     {"MUL", OpCode::MUL},
@@ -86,16 +85,10 @@ std::unordered_map<std::string, OpCode> instructions_map {
     {"INVALID", OpCode::INVALID},
 };
 
-std::unordered_map<std::string, IRegisters> cells_map {
-    {"r0", IRegisters::R0},
-    {"r1", IRegisters::R1},
-    {"r2", IRegisters::R2},
-    {"r3", IRegisters::R3},
-    {"r4", IRegisters::R4},
-    {"r5", IRegisters::R5},
-    {"r6", IRegisters::R6},
-    {"r7", IRegisters::R7},
-    {"ACC", IRegisters::ACC},
+std::unordered_map<std::string, IRegisters> cells_map{
+    {"r0", IRegisters::R0}, {"r1", IRegisters::R1}, {"r2", IRegisters::R2},
+    {"r3", IRegisters::R3}, {"r4", IRegisters::R4}, {"r5", IRegisters::R5},
+    {"r6", IRegisters::R6}, {"r7", IRegisters::R7}, {"ACC", IRegisters::ACC},
 };
 
 #endif // INSTRUCTIONS_H

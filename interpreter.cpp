@@ -1,8 +1,8 @@
 #include <cmath>
-#include <iostream>
 #include <fstream>
-#include <vector>
+#include <iostream>
 #include <sstream>
+#include <vector>
 
 #include "interpreter.h"
 #include "isa/instructions.h"
@@ -12,9 +12,7 @@ Interpreter::Interpreter() {
     accumulator = 0;
 }
 
-Interpreter::~Interpreter() {
-
-}
+Interpreter::~Interpreter() {}
 
 // Определение enum class OpCode и enum class Cells здесь
 
@@ -24,61 +22,62 @@ struct Instruction {
 };
 
 // Декодер инструкции
-Instruction decodeInstruction(const std::vector<uint64_t>& bytecode, size_t& offset) {
+Instruction decodeInstruction(const std::vector<uint64_t> &bytecode,
+                              size_t &offset) {
     Instruction instruction;
-    
+
     // Читаем opcode (первый байт инструкции)
     instruction.opcode = static_cast<OpCode>(bytecode[offset]);
     offset++;
 
     switch (instruction.opcode) {
-        case OpCode::ADD:
-        case OpCode::SUB:
-        case OpCode::MUL:
-        case OpCode::DIV:
-        case OpCode::AND:
-        case OpCode::OR:
-        case OpCode::XOR:
-        case OpCode::SHL:
-        case OpCode::SHR:
-        case OpCode::ASHR:
-        case OpCode::ASHL:
-            instruction.operands.push_back(bytecode[offset]);
-            offset++;
-            instruction.operands.push_back(bytecode[offset+1]);
-            // offset++;
-            instruction.operands.push_back(bytecode[offset+2]);
-            //offset++;
-        case OpCode::MOV_IMM_TO_ACC:
-        case OpCode::MOV_REG_TO_REG:
-            instruction.operands.push_back(bytecode[offset]);
-            offset++;
-            break;
-        case OpCode::INPUT:
-        case OpCode::OUTPUT:
-        case OpCode::SIN:
-        case OpCode::COS:
-        case OpCode::SQRT:
-        case OpCode::RETURN:
-            break;
-        case OpCode::NEG:
-            instruction.operands.push_back(bytecode[offset]);
-            offset++;
-            break;
-        default:
-            std::cerr << "Error: Unknown opcode " << static_cast<int>(instruction.opcode) << std::endl;
-            break;
+    case OpCode::ADD:
+    case OpCode::SUB:
+    case OpCode::MUL:
+    case OpCode::DIV:
+    case OpCode::AND:
+    case OpCode::OR:
+    case OpCode::XOR:
+    case OpCode::SHL:
+    case OpCode::SHR:
+    case OpCode::ASHR:
+    case OpCode::ASHL:
+        instruction.operands.push_back(bytecode[offset]);
+        offset++;
+        instruction.operands.push_back(bytecode[offset + 1]);
+        // offset++;
+        instruction.operands.push_back(bytecode[offset + 2]);
+        // offset++;
+    case OpCode::MOV_IMM_TO_ACC:
+    case OpCode::MOV_REG_TO_REG:
+        instruction.operands.push_back(bytecode[offset]);
+        offset++;
+        break;
+    case OpCode::INPUT:
+    case OpCode::OUTPUT:
+    case OpCode::SIN:
+    case OpCode::COS:
+    case OpCode::SQRT:
+    case OpCode::RETURN:
+        break;
+    case OpCode::NEG:
+        instruction.operands.push_back(bytecode[offset]);
+        offset++;
+        break;
+    default:
+        std::cerr << "Error: Unknown opcode "
+                  << static_cast<int>(instruction.opcode) << std::endl;
+        break;
     }
 
-    for (auto &it: instruction.operands) {
-        std::cout << instruction.operands[it] << std:: endl;
+    for (auto &it : instruction.operands) {
+        std::cout << instruction.operands[it] << std::endl;
     }
 
     std::cout << "---" << std::endl;
 
     return instruction;
 }
-
 
 void Interpreter::loadProgram(const std::string &filename) {
     std::ifstream file(filename);
@@ -93,15 +92,17 @@ void Interpreter::loadProgram(const std::string &filename) {
         std::string word;
         while (iss >> word) {
             if (instructions_map.find(word) != instructions_map.end()) {
-                program.push_back(static_cast<uint64_t>(instructions_map[word]));
+                program.push_back(
+                    static_cast<uint64_t>(instructions_map[word]));
                 // std::cout << word << std::endl;
             }
             if (cells_map.find(word) != cells_map.end()) {
-                // registers.emplace(cells_map.find(word)), static_cast<uint64_t>(cells_map[word]);
-                // std::cout << word << std::endl;
-            } //else {
-                //std::cerr << "Error: Invalid instruction `"<< word << "` in input file." << std::endl;
-                //exit(1);
+                // registers.emplace(cells_map.find(word)),
+                // static_cast<uint64_t>(cells_map[word]); std::cout << word <<
+                // std::endl;
+            } // else {
+              // std::cerr << "Error: Invalid instruction `"<< word << "` in
+              // input file." << std::endl; exit(1);
             //}
         }
     }
@@ -119,46 +120,43 @@ void Interpreter::executeProgram() {
     }
 }
 
-int getRegisterIndex(const std::string& registerName) {
+int getRegisterIndex(const std::string &registerName) {
     if (registerName[0] == 'r' && registerName.size() > 1) {
         return std::stoi(registerName.substr(1));
     }
     return 0;
 }
 
-
 void Interpreter::executeInstruction(uint64_t &pc) {
 
-    static void *dispatch_table[] = {
-        &&HANDLE_ADD,
-        &&HANDLE_SUB,
-        &&HANDLE_MUL,
-        &&HANDLE_DIV,
-        &&HANDLE_AND,
-        &&HANDLE_OR,
-        &&HANDLE_XOR,
-        &&HANDLE_SHL,
-        &&HANDLE_SHR,
-        &&HANDLE_ASHR,
-        &&HANDLE_ASHL,
-        &&HANDLE_NEG,
-        &&HANDLE_MOV_IMM_TO_REG,
-        &&HANDLE_MOV_REG_TO_ACC,
-        &&HANDLE_INPUT,
-        &&HANDLE_OUTPUT,
-        &&HALT,
-        &&HANDLE_SIN,
-        &&HANDLE_COS,
-        &&HANDLE_SQRT,
-        &&HANDLE_INVALID
-    };
-/*
-    if (!handler.IsPrimaryOpcodeValid()) {
-        LOG(ERROR, VERIFIER) << "Incorrect opcode";
-        return VerificationStatus::ERROR;
-    }
-    goto* dispatch_table[handler.GetPrimaryOpcode()];
-*/
+    static void *dispatch_table[] = {&&HANDLE_ADD,
+                                     &&HANDLE_SUB,
+                                     &&HANDLE_MUL,
+                                     &&HANDLE_DIV,
+                                     &&HANDLE_AND,
+                                     &&HANDLE_OR,
+                                     &&HANDLE_XOR,
+                                     &&HANDLE_SHL,
+                                     &&HANDLE_SHR,
+                                     &&HANDLE_ASHR,
+                                     &&HANDLE_ASHL,
+                                     &&HANDLE_NEG,
+                                     &&HANDLE_MOV_IMM_TO_REG,
+                                     &&HANDLE_MOV_REG_TO_ACC,
+                                     &&HANDLE_INPUT,
+                                     &&HANDLE_OUTPUT,
+                                     &&HALT,
+                                     &&HANDLE_SIN,
+                                     &&HANDLE_COS,
+                                     &&HANDLE_SQRT,
+                                     &&HANDLE_INVALID};
+    /*
+        if (!handler.IsPrimaryOpcodeValid()) {
+            LOG(ERROR, VERIFIER) << "Incorrect opcode";
+            return VerificationStatus::ERROR;
+        }
+        goto* dispatch_table[handler.GetPrimaryOpcode()];
+    */
 
     uint64_t operand = program[pc];
     goto *dispatch_table[operand];
