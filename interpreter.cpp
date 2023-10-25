@@ -5,7 +5,7 @@
 #include <sstream>
 
 #include "interpreter.h"
-#include "instructions.h"
+#include "isa/instructions.h"
 
 Interpreter::Interpreter() {
     registers.resize(regNum, 0);
@@ -15,6 +15,70 @@ Interpreter::Interpreter() {
 Interpreter::~Interpreter() {
 
 }
+
+// Определение enum class OpCode и enum class Cells здесь
+
+struct Instruction {
+    OpCode opcode;
+    std::vector<uint64_t> operands;
+};
+
+// Декодер инструкции
+Instruction decodeInstruction(const std::vector<uint64_t>& bytecode, size_t& offset) {
+    Instruction instruction;
+    
+    // Читаем opcode (первый байт инструкции)
+    instruction.opcode = static_cast<OpCode>(bytecode[offset]);
+    offset++;
+
+    switch (instruction.opcode) {
+        case OpCode::ADD:
+        case OpCode::SUB:
+        case OpCode::MUL:
+        case OpCode::DIV:
+        case OpCode::AND:
+        case OpCode::OR:
+        case OpCode::XOR:
+        case OpCode::SHL:
+        case OpCode::SHR:
+        case OpCode::ASHR:
+        case OpCode::ASHL:
+            instruction.operands.push_back(bytecode[offset]);
+            offset++;
+            instruction.operands.push_back(bytecode[offset+1]);
+            // offset++;
+            instruction.operands.push_back(bytecode[offset+2]);
+            //offset++;
+        case OpCode::MOV_IMM_TO_ACC:
+        case OpCode::MOV_REG_TO_REG:
+            instruction.operands.push_back(bytecode[offset]);
+            offset++;
+            break;
+        case OpCode::INPUT:
+        case OpCode::OUTPUT:
+        case OpCode::SIN:
+        case OpCode::COS:
+        case OpCode::SQRT:
+        case OpCode::RETURN:
+            break;
+        case OpCode::NEG:
+            instruction.operands.push_back(bytecode[offset]);
+            offset++;
+            break;
+        default:
+            std::cerr << "Error: Unknown opcode " << static_cast<int>(instruction.opcode) << std::endl;
+            break;
+    }
+
+    for (auto &it: instruction.operands) {
+        std::cout << instruction.operands[it] << std:: endl;
+    }
+
+    std::cout << "---" << std::endl;
+
+    return instruction;
+}
+
 
 void Interpreter::loadProgram(const std::string &filename) {
     std::ifstream file(filename);
@@ -28,14 +92,13 @@ void Interpreter::loadProgram(const std::string &filename) {
         std::istringstream iss(line);
         std::string word;
         while (iss >> word) {
-            OpCode opcode = instructions_map[word];
-            Cells cell = cells_map[word];
             if (instructions_map.find(word) != instructions_map.end()) {
-                program.push_back(static_cast<uint64_t>(opcode));
+                program.push_back(static_cast<uint64_t>(instructions_map[word]));
+                // std::cout << word << std::endl;
             }
             if (cells_map.find(word) != cells_map.end()) {
-                registers.push_back(static_cast<uint64_t>(cell));
-                program.push_back(static_cast<uint64_t>(cell));
+                // registers.emplace(cells_map.find(word)), static_cast<uint64_t>(cells_map[word]);
+                // std::cout << word << std::endl;
             } //else {
                 //std::cerr << "Error: Invalid instruction `"<< word << "` in input file." << std::endl;
                 //exit(1);
@@ -57,10 +120,6 @@ void Interpreter::executeProgram() {
 }
 
 int getRegisterIndex(const std::string& registerName) {
-    // Например, если регистры имеют имена "r0", "r1", и так далее,
-    // то можно извлечь номер регистра из строки.
-
-    // Пример логики для регистров "r0", "r1", "r2" и так далее:
     if (registerName[0] == 'r' && registerName.size() > 1) {
         return std::stoi(registerName.substr(1));
     }
