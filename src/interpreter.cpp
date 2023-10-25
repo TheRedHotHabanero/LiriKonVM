@@ -4,8 +4,9 @@
 #include <sstream>
 #include <vector>
 
-#include "interpreter.h"
-#include "isa/instructions.h"
+#include "../include/interpreter.h"
+#include "../isa/instructions.h"
+#include "../include/vm.h"
 
 Interpreter::Interpreter() {
     registers.resize(regNum, 0);
@@ -14,70 +15,63 @@ Interpreter::Interpreter() {
 
 Interpreter::~Interpreter() {}
 
-// Определение enum class OpCode и enum class Cells здесь
-
-struct Instruction {
-    OpCode opcode;
-    std::vector<uint64_t> operands;
-};
-
 // Декодер инструкции
-Instruction decodeInstruction(const std::vector<uint64_t> &bytecode,
-                              size_t &offset) {
-    Instruction instruction;
-
-    // Читаем opcode (первый байт инструкции)
-    instruction.opcode = static_cast<OpCode>(bytecode[offset]);
-    offset++;
-
-    switch (instruction.opcode) {
-    case OpCode::ADD:
-    case OpCode::SUB:
-    case OpCode::MUL:
-    case OpCode::DIV:
-    case OpCode::AND:
-    case OpCode::OR:
-    case OpCode::XOR:
-    case OpCode::SHL:
-    case OpCode::SHR:
-    case OpCode::ASHR:
-    case OpCode::ASHL:
-        instruction.operands.push_back(bytecode[offset]);
-        offset++;
-        instruction.operands.push_back(bytecode[offset + 1]);
-        // offset++;
-        instruction.operands.push_back(bytecode[offset + 2]);
-        // offset++;
-    case OpCode::MOV_IMM_TO_ACC:
-    case OpCode::MOV_REG_TO_REG:
-        instruction.operands.push_back(bytecode[offset]);
-        offset++;
-        break;
-    case OpCode::INPUT:
-    case OpCode::OUTPUT:
-    case OpCode::SIN:
-    case OpCode::COS:
-    case OpCode::SQRT:
-    case OpCode::RETURN:
-        break;
-    case OpCode::NEG:
-        instruction.operands.push_back(bytecode[offset]);
-        offset++;
-        break;
-    default:
-        std::cerr << "Error: Unknown opcode "
-                  << static_cast<int>(instruction.opcode) << std::endl;
-        break;
-    }
-
-    for (auto &it : instruction.operands) {
-        std::cout << instruction.operands[it] << std::endl;
-    }
-
-    std::cout << "---" << std::endl;
-
-    return instruction;
-}
+//Instruction decodeInstruction(const std::vector<uint64_t> &bytecode,
+//                              size_t &offset) {
+//    Instruction instruction;
+//
+//    // Читаем opcode (первый байт инструкции)
+//    instruction.opcode = static_cast<OpCode>(bytecode[offset]);
+//    offset++;
+//
+//    switch (instruction.opcode) {
+//    case OpCode::ADD:
+//    case OpCode::SUB:
+//    case OpCode::MUL:
+//    case OpCode::DIV:
+//    case OpCode::AND:
+//    case OpCode::OR:
+//    case OpCode::XOR:
+//    case OpCode::SHL:
+//    case OpCode::SHR:
+//    case OpCode::ASHR:
+//    case OpCode::ASHL:
+//        instruction.operands.push_back(bytecode[offset]);
+//        offset++;
+//        instruction.operands.push_back(bytecode[offset + 1]);
+//        // offset++;
+//        instruction.operands.push_back(bytecode[offset + 2]);
+//        // offset++;
+//    case OpCode::MOV_IMM_TO_ACC:
+//    case OpCode::MOV_REG_TO_REG:
+//        instruction.operands.push_back(bytecode[offset]);
+//        offset++;
+//        break;
+//    case OpCode::INPUT:
+//    case OpCode::OUTPUT:
+//    case OpCode::SIN:
+//    case OpCode::COS:
+//    case OpCode::SQRT:
+//    case OpCode::RETURN:
+//        break;
+//    case OpCode::NEG:
+//        instruction.operands.push_back(bytecode[offset]);
+//        offset++;
+//        break;
+//    default:
+//        std::cerr << "Error: Unknown opcode "
+//                  << static_cast<int>(instruction.opcode) << std::endl;
+//        break;
+//    }
+//
+//    for (auto &it : instruction.operands) {
+//        std::cout << instruction.operands[it] << std::endl;
+//    }
+//
+//    std::cout << "---" << std::endl;
+//
+//    return instruction;
+//}
 
 void Interpreter::loadProgram(const std::string &filename) {
     std::ifstream file(filename);
@@ -97,13 +91,7 @@ void Interpreter::loadProgram(const std::string &filename) {
                 // std::cout << word << std::endl;
             }
             if (cells_map.find(word) != cells_map.end()) {
-                // registers.emplace(cells_map.find(word)),
-                // static_cast<uint64_t>(cells_map[word]); std::cout << word <<
-                // std::endl;
-            } // else {
-              // std::cerr << "Error: Invalid instruction `"<< word << "` in
-              // input file." << std::endl; exit(1);
-            //}
+            }
         }
     }
 
@@ -141,22 +129,15 @@ void Interpreter::executeInstruction(uint64_t &pc) {
                                      &&HANDLE_ASHR,
                                      &&HANDLE_ASHL,
                                      &&HANDLE_NEG,
-                                     &&HANDLE_MOV_IMM_TO_REG,
-                                     &&HANDLE_MOV_REG_TO_ACC,
+                                     &&HANDLE_MOV_IMM_TO_ACC,
+                                     &&HANDLE_MOV_REG_TO_REG,
                                      &&HANDLE_INPUT,
                                      &&HANDLE_OUTPUT,
-                                     &&HALT,
+                                     &&HANDLE_RETURN,
                                      &&HANDLE_SIN,
                                      &&HANDLE_COS,
                                      &&HANDLE_SQRT,
                                      &&HANDLE_INVALID};
-    /*
-        if (!handler.IsPrimaryOpcodeValid()) {
-            LOG(ERROR, VERIFIER) << "Incorrect opcode";
-            return VerificationStatus::ERROR;
-        }
-        goto* dispatch_table[handler.GetPrimaryOpcode()];
-    */
 
     uint64_t operand = program[pc];
     goto *dispatch_table[operand];
@@ -212,29 +193,25 @@ HANDLE_NEG:
     accumulator = -accumulator;
     operand = program[++pc];
     goto *dispatch_table[operand];
-HANDLE_MOV_IMM_TO_REG:
+HANDLE_MOV_IMM_TO_ACC:
     registers[operand] = operand;
     operand = program[++pc];
     goto *dispatch_table[operand];
-HANDLE_MOV_REG_TO_ACC:
-    std::cout << "in mov reg to acc. " << std::endl;
+HANDLE_MOV_REG_TO_REG:
     accumulator = registers[operand];
     operand = program[++pc];
     goto *dispatch_table[operand];
 HANDLE_INPUT:
-    std::cout << "in input. " << std::endl;
     uint64_t input;
     std::cin >> input;
-    // accumulator = input;
     registers[operand] = input;
     operand = program[++pc];
     goto *dispatch_table[operand];
 HANDLE_OUTPUT:
-    std::cout << "in output. " << std::endl;
     std::cout << accumulator << std::endl;
     operand = program[++pc];
     goto *dispatch_table[operand];
-HALT:
+HANDLE_RETURN:
     return;
 HANDLE_SIN:
     accumulator = std::sin(accumulator);

@@ -1,5 +1,5 @@
-#ifndef INTERPRETER_H
-#define INTERPRETER_H
+#ifndef INCLUDE_INTERPRETER_H
+#define INCLUDE_INTERPRETER_H
 
 #include <fstream>
 #include <iostream>
@@ -21,4 +21,4 @@ class Interpreter final {
     void executeInstruction(uint64_t &pc);
 };
 
-#endif // INTERPRETER_H
+#endif // INCLUDE_INTERPRETER_H

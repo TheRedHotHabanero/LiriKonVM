@@ -10,5 +10,5 @@ set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/build)
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR})
 
 add_executable(LiriKonVM
-    ${CMAKE_SOURCE_DIR}/interpreter.cpp
-    ${CMAKE_SOURCE_DIR}/main.cpp)
+    ${CMAKE_SOURCE_DIR}/src/interpreter.cpp
+    ${CMAKE_SOURCE_DIR}/src/main.cpp)

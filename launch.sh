@@ -1,5 +1,5 @@
 python3 third_party/install.py
-mkdir build
+cmake -B build
 cd build
 cmake ..
 make
