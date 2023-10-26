@@ -6,7 +6,12 @@
 
 struct Decoder final {
     Decoder();
-    ~Decoder();
+    ~Decoder() {
+        if (this == nullptr) {
+            return;
+        }
+        delete this;
+    };
     Instruction decodeInstruction(interpreter::Instr intr_to_decode);
 };
 

@@ -5,72 +5,23 @@
 #include <vector>
 
 #include "../include/interpreter.h"
-#include "../isa/instructions.h"
 #include "../include/vm.h"
+#include "../include/decoder.h"
+#include "../include/runner.h"
+#include "../isa/instructions.h"
 
-Interpreter::Interpreter() {};
+Interpreter::Interpreter() {
+    decoder_ = new Decoder();
+    runner_ = new Runner();
+}
 
-Interpreter::~Interpreter() {}
-
-// Декодер инструкции
-//Instruction decodeInstruction(const std::vector<uint64_t> &bytecode,
-//                              size_t &offset) {
-//    Instruction instruction;
-//
-//    // Читаем opcode (первый байт инструкции)
-//    instruction.opcode = static_cast<OpCode>(bytecode[offset]);
-//    offset++;
-//
-//    switch (instruction.opcode) {
-//    case OpCode::ADD:
-//    case OpCode::SUB:
-//    case OpCode::MUL:
-//    case OpCode::DIV:
-//    case OpCode::AND:
-//    case OpCode::OR:
-//    case OpCode::XOR:
-//    case OpCode::SHL:
-//    case OpCode::SHR:
-//    case OpCode::ASHR:
-//    case OpCode::ASHL:
-//        instruction.operands.push_back(bytecode[offset]);
-//        offset++;
-//        instruction.operands.push_back(bytecode[offset + 1]);
-//        // offset++;
-//        instruction.operands.push_back(bytecode[offset + 2]);
-//        // offset++;
-//    case OpCode::MOV_IMM_TO_ACC:
-//    case OpCode::MOV_REG_TO_REG:
-//        instruction.operands.push_back(bytecode[offset]);
-//        offset++;
-//        break;
-//    case OpCode::INPUT:
-//    case OpCode::OUTPUT:
-//    case OpCode::SIN:
-//    case OpCode::COS:
-//    case OpCode::SQRT:
-//    case OpCode::RETURN:
-//        break;
-//    case OpCode::NEG:
-//        instruction.operands.push_back(bytecode[offset]);
-//        offset++;
-//        break;
-//    default:
-//        std::cerr << "Error: Unknown opcode "
-//                  << static_cast<int>(instruction.opcode) << std::endl;
-//        break;
-//    }
-//
-//    for (auto &it : instruction.operands) {
-//        std::cout << instruction.operands[it] << std::endl;
-//    }
-//
-//    std::cout << "---" << std::endl;
-//
-//    return instruction;
-//}
+Interpreter::~Interpreter() {
+    ~Decoder();
+    ~Runner();
+}
 
 void Interpreter::loadProgram(const std::string &filename) {
+
     std::ifstream file(filename);
     if (!file.is_open()) {
         std::cerr << "Error: Unable to open the program file." << std::endl;
@@ -81,40 +32,25 @@ void Interpreter::loadProgram(const std::string &filename) {
     while (std::getline(file, line)) {
         std::istringstream iss(line);
         std::string word;
-        while (iss >> word) {
-            if (instructions_map.find(word) != instructions_map.end()) {
-                program.push_back(
-                    static_cast<uint64_t>(instructions_map[word]));
-                // std::cout << word << std::endl;
-            }
-            if (cells_map.find(word) != cells_map.end()) {
-            }
-        }
+        // while (iss >> word) {
+        //     if (instructions_map.find(word) != instructions_map.end()) {
+        //         program.push_back(
+        //             static_cast<uint64_t>(instructions_map[word]));
+        //         // std::cout << word << std::endl;
+        //     }
+        //     if (cells_map.find(word) != cells_map.end()) {
+        //     }
+        // }
     }
 
     file.close();
 }
 
-void Interpreter::executeProgram([[maybe_unused]] Byte *bytecode) {
-    // uint64_t curr_inst = 0;
-    // uint64_t pc = 0;
-    // uint64_t size = program.size();
-    // while (curr_inst < size) {
-    //     executeInstruction(pc);
-    //     curr_inst += 1;
-    // }
+interpreter::Instr Interpreter::executeInstruction(interpreter::Byte *bytecode, interpreter::IReg pc) {
+    return *reinterpret_cast<interpreter::Instr *>(&bytecode[pc]);
 }
 
-int getRegisterIndex(const std::string &registerName) {
-    if (registerName[0] == 'r' && registerName.size() > 1) {
-        return std::stoi(registerName.substr(1));
-    }
-    return 0;
-}
-
-// void Interpreter::executeInstruction(uint64_t &pc) {
-
-Instr executeInstruction([[maybe_unused]] Byte *bytecode, interpreter::Reg pc);
+void Interpreter::executeProgram(interpreter::Byte *bytecode) {
     static void *dispatch_table[] = {&&HANDLE_ADD,
                                      &&HANDLE_SUB,
                                      &&HANDLE_MUL,
@@ -136,93 +72,82 @@ Instr executeInstruction([[maybe_unused]] Byte *bytecode, interpreter::Reg pc);
                                      &&HANDLE_COS,
                                      &&HANDLE_SQRT,
                                      &&HANDLE_INVALID};
+    auto &registers = runner_->GetIRegs();
+    auto &fregisters = runner_->GetFRegs();
+    interpreter::IReg &pc = registers[9];
+    Instruction *cur_instr = new Instruction;
+    *cur_instr = decoder_->decodeInstruction(executeInstruction(bytecode, pc));
+    goto *dispatch_table[cur_instr->GetSecondReg()];
 
-    uint64_t operand = program[pc];
-    goto *dispatch_table[operand];
+    #define NEXT()                                          \
+        pc += 4;                                            \
+        *cur_instr = decoder_->decodeInstruction(executeInstruction(code, pc)); \
+        goto *dispatch_table[cur_instr->GetSecondReg()];
 
 HANDLE_ADD:
     accumulator += registers[operand];
-    operand = program[++pc];
-    goto *dispatch_table[operand];
+    NEXT();
 HANDLE_SUB:
     accumulator -= registers[operand];
-    operand = program[++pc];
-    goto *dispatch_table[operand];
+    NEXT();
 HANDLE_MUL:
     accumulator *= registers[operand];
-    operand = program[++pc];
-    goto *dispatch_table[operand];
+    NEXT();
 HANDLE_DIV:
     accumulator /= registers[operand];
-    operand = program[++pc];
-    goto *dispatch_table[operand];
+    NEXT();
 HANDLE_AND:
     accumulator &= registers[operand];
-    operand = program[++pc];
-    goto *dispatch_table[operand];
+    NEXT();
 HANDLE_OR:
     accumulator |= registers[operand];
-    operand = program[++pc];
-    goto *dispatch_table[operand];
+    NEXT();
 HANDLE_XOR:
     accumulator ^= registers[operand];
-    operand = program[++pc];
-    goto *dispatch_table[operand];
+    NEXT();
 HANDLE_SHL:
     accumulator <<= registers[operand];
-    operand = program[++pc];
-    goto *dispatch_table[operand];
+    NEXT();
 HANDLE_SHR:
     accumulator >>= registers[operand];
-    operand = program[++pc];
-    goto *dispatch_table[operand];
+    NEXT();
 HANDLE_ASHR:
     uint64_t shift_ashr = registers[operand];
     uint64_t sign = (accumulator < 0) ? -1 : 1;
     accumulator = sign * (abs(accumulator) >> shift_ashr);
-    operand = program[++pc];
-    goto *dispatch_table[operand];
+    NEXT();
 HANDLE_ASHL:
     uint64_t shift_ashl = registers[operand];
     accumulator = accumulator << shift_ashl;
-    operand = program[++pc];
-    goto *dispatch_table[operand];
+    NEXT();
 HANDLE_NEG:
     accumulator = -accumulator;
-    operand = program[++pc];
-    goto *dispatch_table[operand];
+    NEXT();
 HANDLE_MOV_IMM_TO_ACC:
     registers[operand] = operand;
-    operand = program[++pc];
-    goto *dispatch_table[operand];
+    NEXT();
 HANDLE_MOV_REG_TO_REG:
     accumulator = registers[operand];
-    operand = program[++pc];
-    goto *dispatch_table[operand];
+    NEXT();
 HANDLE_INPUT:
     uint64_t input;
     std::cin >> input;
     registers[operand] = input;
-    operand = program[++pc];
-    goto *dispatch_table[operand];
+    NEXT();
 HANDLE_OUTPUT:
     std::cout << accumulator << std::endl;
-    operand = program[++pc];
-    goto *dispatch_table[operand];
+    NEXT();
 HANDLE_RETURN:
     return;
 HANDLE_SIN:
     accumulator = std::sin(accumulator);
-    operand = program[++pc];
-    goto *dispatch_table[operand];
+   NEXT();
 HANDLE_COS:
     accumulator = std::cos(accumulator);
-    operand = program[++pc];
-    goto *dispatch_table[operand];
+    NEXT();
 HANDLE_SQRT:
     accumulator = std::sqrt(accumulator);
-    operand = program[++pc];
-    goto *dispatch_table[operand];
+   NEXT();
 HANDLE_INVALID:
     std::cerr << "Error: Unknown opcode " << program[pc] << std::endl;
     exit(1);

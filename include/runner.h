@@ -6,10 +6,18 @@
 #include "../isa/instructions.h"
 #include "vm.h"
 
+
 class Runner final {
 public:
-    Runner();
-    ~Runner();
+    Runner() {
+        // return new Runner;
+    };
+    ~Runner() {
+        if (this == nullptr) {
+            return;
+        }
+        delete this;
+    };
     bool Run(Instruction);
     std::vector<interpreter::IReg> &GetIRegs() {
         return iRegs_;
