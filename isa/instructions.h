@@ -24,8 +24,6 @@ enum class OpCode : uint64_t {
     // Bitwise
     SHL,
     SHR,
-    ASHR,
-    ASHL,
 
     // Memory
     MOV_IMM_TO_ACC,
@@ -38,11 +36,12 @@ enum class OpCode : uint64_t {
     SIN,
     COS,
     SQRT,
+    POW,
 
     INVALID,
 };
 
-enum class IRegisters : uint64_t {
+enum IRegisters : uint64_t {
     ACC = 0x0,
     R0 = 0x1,
     R1 = 0x2,
@@ -54,7 +53,7 @@ enum class IRegisters : uint64_t {
     R7 = 0x8,
 };
 
-enum class FRegisters : uint64_t {
+enum FRegisters : uint64_t {
     FACC = 0x0,
     FR0 = 0x1,
     FR1 = 0x2,
@@ -76,8 +75,6 @@ std::unordered_map<std::string, OpCode> instructions_map{
     {"XOR", OpCode::XOR},
     {"SHL", OpCode::SHL},
     {"SHR", OpCode::SHR},
-    {"ASHR", OpCode::ASHR},
-    {"ASHL", OpCode::ASHL},
     {"NEG", OpCode::NEG},
     {"MOV_IMM_TO_ACC", OpCode::MOV_IMM_TO_ACC},
     {"MOV_REG_TO_REG", OpCode::MOV_REG_TO_REG},
@@ -87,6 +84,7 @@ std::unordered_map<std::string, OpCode> instructions_map{
     {"SIN", OpCode::SIN},
     {"COS", OpCode::COS},
     {"SQRT", OpCode::SQRT},
+    {"POW", OpCode::POW},
     {"INVALID", OpCode::INVALID},
 };
 

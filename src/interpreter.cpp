@@ -16,8 +16,8 @@ Interpreter::Interpreter() {
 }
 
 Interpreter::~Interpreter() {
-    ~Decoder();
-    ~Runner();
+    delete decoder_;
+    delete runner_;
 }
 
 void Interpreter::loadProgram(const std::string &filename) {
@@ -32,15 +32,15 @@ void Interpreter::loadProgram(const std::string &filename) {
     while (std::getline(file, line)) {
         std::istringstream iss(line);
         std::string word;
-        // while (iss >> word) {
-        //     if (instructions_map.find(word) != instructions_map.end()) {
-        //         program.push_back(
-        //             static_cast<uint64_t>(instructions_map[word]));
-        //         // std::cout << word << std::endl;
-        //     }
-        //     if (cells_map.find(word) != cells_map.end()) {
-        //     }
-        // }
+        while (iss >> word) {
+            if (instructions_map.find(word) != instructions_map.end()) {
+                program.push_back(
+                    static_cast<uint64_t>(instructions_map[word]));
+                // std::cout << word << std::endl;
+            }
+            if (cells_map.find(word) != cells_map.end()) {
+            }
+        }
     }
 
     file.close();
@@ -60,8 +60,6 @@ void Interpreter::executeProgram(interpreter::Byte *bytecode) {
                                      &&HANDLE_XOR,
                                      &&HANDLE_SHL,
                                      &&HANDLE_SHR,
-                                     &&HANDLE_ASHR,
-                                     &&HANDLE_ASHL,
                                      &&HANDLE_NEG,
                                      &&HANDLE_MOV_IMM_TO_ACC,
                                      &&HANDLE_MOV_REG_TO_REG,
@@ -71,84 +69,79 @@ void Interpreter::executeProgram(interpreter::Byte *bytecode) {
                                      &&HANDLE_SIN,
                                      &&HANDLE_COS,
                                      &&HANDLE_SQRT,
+                                     &&HANDLE_POW,
                                      &&HANDLE_INVALID};
-    auto &registers = runner_->GetIRegs();
+    auto &iregisters = runner_->GetIRegs();
     auto &fregisters = runner_->GetFRegs();
-    interpreter::IReg &pc = registers[9];
+    interpreter::IReg &pc = iregisters[9];
     Instruction *cur_instr = new Instruction;
     *cur_instr = decoder_->decodeInstruction(executeInstruction(bytecode, pc));
     goto *dispatch_table[cur_instr->GetSecondReg()];
 
-    #define NEXT()                                          \
-        pc += 4;                                            \
-        *cur_instr = decoder_->decodeInstruction(executeInstruction(code, pc)); \
-        goto *dispatch_table[cur_instr->GetSecondReg()];
+    #define NEXT()                                                                  \
+        pc += 4;                                                                    \
+        *cur_instr = decoder_->decodeInstruction(executeInstruction(bytecode, pc)); \
+        goto *dispatch_table[cur_instr->GetSecondReg()];                            \
 
 HANDLE_ADD:
-    accumulator += registers[operand];
+    iregisters[IRegisters::ACC] = iregisters[cur_instr->reg_id] + iregisters[cur_instr->GetSecondReg()];
     NEXT();
 HANDLE_SUB:
-    accumulator -= registers[operand];
+    iregisters[IRegisters::ACC] = iregisters[cur_instr->reg_id] - iregisters[cur_instr->GetSecondReg()];
     NEXT();
 HANDLE_MUL:
-    accumulator *= registers[operand];
+    iregisters[IRegisters::ACC] = iregisters[cur_instr->reg_id] * iregisters[cur_instr->GetSecondReg()];
     NEXT();
 HANDLE_DIV:
-    accumulator /= registers[operand];
+    // TODO: add case with zero div
+    iregisters[IRegisters::ACC] = iregisters[cur_instr->reg_id] / iregisters[cur_instr->GetSecondReg()];
     NEXT();
 HANDLE_AND:
-    accumulator &= registers[operand];
+    iregisters[IRegisters::ACC] = iregisters[cur_instr->reg_id] & iregisters[cur_instr->GetSecondReg()];
     NEXT();
 HANDLE_OR:
-    accumulator |= registers[operand];
+    iregisters[IRegisters::ACC] = iregisters[cur_instr->reg_id] | iregisters[cur_instr->GetSecondReg()];
     NEXT();
 HANDLE_XOR:
-    accumulator ^= registers[operand];
+    iregisters[IRegisters::ACC] = iregisters[cur_instr->reg_id] ^ iregisters[cur_instr->GetSecondReg()];
     NEXT();
 HANDLE_SHL:
-    accumulator <<= registers[operand];
+    iregisters[IRegisters::ACC] = iregisters[cur_instr->reg_id] << iregisters[cur_instr->GetSecondReg()];
     NEXT();
 HANDLE_SHR:
-    accumulator >>= registers[operand];
-    NEXT();
-HANDLE_ASHR:
-    uint64_t shift_ashr = registers[operand];
-    uint64_t sign = (accumulator < 0) ? -1 : 1;
-    accumulator = sign * (abs(accumulator) >> shift_ashr);
-    NEXT();
-HANDLE_ASHL:
-    uint64_t shift_ashl = registers[operand];
-    accumulator = accumulator << shift_ashl;
+    iregisters[IRegisters::ACC] = iregisters[cur_instr->reg_id] >> iregisters[cur_instr->GetSecondReg()];
     NEXT();
 HANDLE_NEG:
-    accumulator = -accumulator;
+    iregisters[IRegisters::ACC] = -iregisters[cur_instr->reg_id];
     NEXT();
 HANDLE_MOV_IMM_TO_ACC:
-    registers[operand] = operand;
+    iregisters[IRegisters::ACC] = cur_instr->imm;
     NEXT();
 HANDLE_MOV_REG_TO_REG:
-    accumulator = registers[operand];
+    iregisters[cur_instr->reg_id] = iregisters[cur_instr->GetSecondReg()];
     NEXT();
 HANDLE_INPUT:
-    uint64_t input;
-    std::cin >> input;
-    registers[operand] = input;
+    std::cin >> iregisters[IRegisters::ACC];
     NEXT();
 HANDLE_OUTPUT:
-    std::cout << accumulator << std::endl;
+    std::cout << iregisters[IRegisters::ACC];
     NEXT();
 HANDLE_RETURN:
+    delete cur_instr;
     return;
 HANDLE_SIN:
-    accumulator = std::sin(accumulator);
+    fregisters[FRegisters::FACC] = std::sin(fregisters[cur_instr->reg_id]);
    NEXT();
 HANDLE_COS:
-    accumulator = std::cos(accumulator);
+    fregisters[FRegisters::FACC] = std::cos(fregisters[cur_instr->reg_id]);
     NEXT();
 HANDLE_SQRT:
-    accumulator = std::sqrt(accumulator);
-   NEXT();
+    fregisters[FRegisters::FACC] = std::sqrt(fregisters[cur_instr->reg_id]);
+    NEXT();
+HANDLE_POW:
+    iregisters[FRegisters::FACC] = std::pow(fregisters[cur_instr->reg_id], cur_instr->imm);
+    NEXT();
 HANDLE_INVALID:
-    std::cerr << "Error: Unknown opcode " << program[pc] << std::endl;
+    std::cerr << "Error: Unknown opcode " << std::endl;
     exit(1);
 }
