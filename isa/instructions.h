@@ -3,11 +3,6 @@
 #include <unordered_map>
 #include <iostream>
 
-namespace vm_numbers {
-    constexpr uint64_t OPCODE_NUM = 30;
-    constexpr uint64_t REG_NUM = 9;
-}
-
 enum OpCode : uint64_t {
     // Arithmetical
     ADD,
@@ -51,7 +46,7 @@ enum OpCode : uint64_t {
     INVALID,
 };
 
-enum IRegisters : uint64_t {
+enum IRegisters : uint8_t {
     ACC = 0x0,
     R0 = 0x1,
     R1 = 0x2,
@@ -63,7 +58,7 @@ enum IRegisters : uint64_t {
     R7 = 0x8,
 };
 
-enum FRegisters : uint64_t {
+enum FRegisters : uint8_t {
     FACC = 0x0,
     FR0 = 0x1,
     FR1 = 0x2,

@@ -12,9 +12,11 @@ public:
     bool Run(Instruction);
 
     std::vector<interpreter::IReg> &GetIRegs() {
+        iRegs_.resize(vm_numbers::REG_NUM);
         return iRegs_;
     }
     std::vector<interpreter::FReg> &GetFRegs() {
+        fRegs_.resize(vm_numbers::REG_NUM);
         return fRegs_;
     }
     static Runner *Init() {

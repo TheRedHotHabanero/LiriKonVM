@@ -11,7 +11,7 @@
 #include "../include/runner.h"
 
 std::vector<interpreter::Instr> Interpreter::GetProgram() {
-  return program_;
+    return program_;
 }
 
 Interpreter::Interpreter() {
@@ -39,30 +39,26 @@ void Interpreter::loadProgram(const std::string &filename) {
         int counter = 0;
         while (iss >> word) {
             if (instructions_map.find(word) != instructions_map.end()) {
-                words_.push_back(
-                    static_cast<interpreter::Instr>(instructions_map[word]));
+                words_.push_back(instructions_map[word]);
                 counter += 1;
             }
             if (cells_map.find(word) != cells_map.end()) {
-                words_.push_back(
-                    static_cast<interpreter::Instr>(cells_map[word]));
+                words_.push_back(cells_map[word]);
                 counter += 1;
             }
             if (f_cells_map.find(word) != f_cells_map.end()) {
-                words_.push_back(
-                    static_cast<interpreter::Instr>(cells_map[word]));
+                words_.push_back(cells_map[word]);
                 counter += 1;
             }
         };
         if (counter == 3) {
-            program_.push_back(parse_3(words_[words_.size()- 3], words_[words_.size() - 2], words_[words_.size() - 1]));
+            program_.push_back(parse_3(words_[words_.size() - 3], words_[words_.size() - 2], words_[words_.size() - 1]));
         } else if (counter == 2) {
             program_.push_back(parse_2(words_[words_.size() - 2], words_[words_.size() - 1]));
         } else if (counter == 1) {
             program_.push_back(parse_1(words_[words_.size() - 1]));
         } else {
             std::cerr << "Error in creating instruction." << std::endl;
-            return;
         }
     }
 
@@ -70,7 +66,7 @@ void Interpreter::loadProgram(const std::string &filename) {
 }
 
 interpreter::Instr Interpreter::executeInstruction(interpreter::Byte *bytecode, interpreter::IReg pc) {
-    return *reinterpret_cast<interpreter::Instr *>(&bytecode[pc]);
+    return *reinterpret_cast<interpreter::Instr*>(&bytecode[pc]);
 }
 
 void Interpreter::executeProgram(interpreter::Byte *bytecode) {
@@ -107,18 +103,17 @@ void Interpreter::executeProgram(interpreter::Byte *bytecode) {
     auto &fregisters = runner_->GetFRegs();
     interpreter::IReg &pc = iregisters[vm_numbers::REG_NUM - 1];
     Instruction *cur_instr = new Instruction();
-    std::cout << "execute 1" << std::endl;
     *cur_instr = decoder_->decodeInstruction(executeInstruction(bytecode, pc));
-    std::cout << "execute 2" << std::endl;
     goto *dispatch_table[cur_instr->GetInstOpcode()];
 
     #define NEXT()                                                                  \
         pc += 4;                                                                    \
         *cur_instr = decoder_->decodeInstruction(executeInstruction(bytecode, pc)); \
-        goto *dispatch_table[cur_instr->GetInstOpcode()];                           \
+        goto *dispatch_table[cur_instr->GetInstOpcode()];
 
 HANDLE_ADD:
     iregisters[IRegisters::ACC] = iregisters[cur_instr->reg_id] + iregisters[cur_instr->GetSecondReg()];
+    std::cout << "navalil" << static_cast<int>(iregisters[IRegisters::ACC]) << std::endl;
     NEXT();
 HANDLE_ADDF:
     fregisters[FRegisters::FACC] = fregisters[cur_instr->reg_id] + fregisters[cur_instr->GetSecondReg()];
@@ -177,10 +172,10 @@ HANDLE_MOV_REG_TO_REGF:
     fregisters[cur_instr->reg_id] = fregisters[cur_instr->GetSecondReg()];
     NEXT();
 HANDLE_INPUT:
-    std::cin >> iregisters[IRegisters::ACC];
+    std::cin >> iregisters[cur_instr->reg_id];
     NEXT();
 HANDLE_INPUTF:
-    std::cin >> fregisters[FRegisters::FACC];
+    std::cin >> fregisters[cur_instr->reg_id];
     NEXT();
 HANDLE_OUTPUT:
     std::cout << iregisters[IRegisters::ACC];
@@ -208,70 +203,86 @@ HANDLE_INVALID:
     exit(1);
 }
 
-interpreter::Instr Interpreter::parse_3(interpreter::Instr opcode, interpreter::Instr source_1, interpreter::Instr source_2) {
+interpreter::Instr Interpreter::parse_3(uint8_t opcode, uint32_t source_1, uint32_t source_2) {
 
     interpreter::Instr value = 0;
-    interpreter::RegID reg_id = source_1;
-    interpreter::Imm imm = source_2;
+
     switch (opcode)
     {
         case OpCode::ADD:
             value |= OpCode::ADD;
+            break;
         case OpCode::DIV:
             value |= OpCode::DIV;
+            break;
         case OpCode::SUB:
             value |= OpCode::SUB;
+            break;
         case OpCode::MUL:
             value |= OpCode::MUL;
+            break;
         case OpCode::AND:
             value |= OpCode::AND;
+            break;
         case OpCode::OR:
             value |= OpCode::OR;
+            break;
         case OpCode::XOR:
             value |= OpCode::XOR;
+            break;
         case OpCode::NEG:
             value |= OpCode::NEG;
+            break;
         case OpCode::MOV_REG_TO_REG:
             value |= OpCode::MOV_REG_TO_REG;
+            break;
         // --------------------------------
         case OpCode::ADDF:
             value |= OpCode::ADDF;
+            break;
         case OpCode::DIVF:
             value |= OpCode::DIVF;
+            break;
         case OpCode::SUBF:
             value |= OpCode::SUBF;
+            break;
         case OpCode::MULF:
             value |= OpCode::MULF;
+            break;
         case OpCode::NEGF:
             value |= OpCode::NEGF;
+            break;
         case OpCode::MOV_REG_TO_REGF:
             value |= OpCode::MOV_REG_TO_REGF;
+            break;
         default:
-            value |= (reg_id << 64);
-            value |= (imm << 64);
             break;
     }
+    value |= (source_1 << 8);
+    value |= (source_2 << 16);
     return value;
 }
 
-interpreter::Instr Interpreter::parse_2(interpreter::Instr opcode, interpreter::Instr source) {
+interpreter::Instr Interpreter::parse_2(uint8_t opcode, uint32_t source) {
     interpreter::Instr value = 0;
     switch (opcode) {
         case OpCode::INPUT:
             value |= OpCode::INPUT;
+            value |= (source << 8);
             break;
         case OpCode::INPUTF:
             value |= OpCode::INPUTF;
+            value |= (source << 8);
             break;
         case OpCode::MOV_IMM_TO_ACC:
             value |= OpCode::MOV_IMM_TO_ACC;
-            value |= ((source >> 64) & (1ULL << 64  - 1)) << 128;
-            value |= (source & (1ULL << 64  - 1)) << 192;
+            value |= ((source >> 8) & (1ULL << 8  - 1)) << 16;
+            value |= (source & (1ULL << 8  - 1)) << 24;
             break;
         case OpCode::MOV_IMM_TO_ACCF:
             value |= OpCode::MOV_IMM_TO_ACCF;
-            value |= ((source >> 64) & (1ULL << 64  - 1)) << 128;
-            value |= (source & (1ULL << 64  - 1)) << 192;
+            value |= ((source >> 8) & (1ULL << 8  - 1)) << 16;
+            value |= (source & (1ULL << 8  - 1)) << 24;
             break;
         case OpCode::OUTPUT:
             value |= OpCode::OUTPUT;
@@ -287,15 +298,15 @@ interpreter::Instr Interpreter::parse_2(interpreter::Instr opcode, interpreter::
     return value;
 }
 
-interpreter::Instr Interpreter::parse_1(interpreter::Instr opcode) {
+interpreter::Instr Interpreter::parse_1(uint8_t opcode) {
+    interpreter::Instr value = 0;
     switch (opcode)
     {
         case OpCode::RETURN:
-            return 0;
+            return value |= OpCode::RETURN;
         case OpCode::INVALID:
-            return 1;
+            return value |= OpCode::INVALID;
         default:
-            break;
-
+            return value |= OpCode::INVALID;
     }
 }
