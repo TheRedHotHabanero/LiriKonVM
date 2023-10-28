@@ -4,14 +4,10 @@
 #include "instruction.h"
 #include "vm.h"
 
-struct Decoder final {
-    Decoder();
-    ~Decoder() {
-        if (this == nullptr) {
-            return;
-        }
-        delete this;
-    };
+class Decoder final {
+public:
+    Decoder() = default;
+    ~Decoder() = default;
     Instruction decodeInstruction(interpreter::Instr intr_to_decode);
 };
 

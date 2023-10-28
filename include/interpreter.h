@@ -6,7 +6,6 @@
 #include <vector>
 #include "decoder.h"
 #include "runner.h"
-#include "vm.h"
 
 class Interpreter final {
   public:
@@ -14,9 +13,11 @@ class Interpreter final {
     void loadProgram(const std::string &filename);
     interpreter::Instr executeInstruction(interpreter::Byte *bytecode, interpreter::IReg pc);
     void executeProgram(interpreter::Byte *bytecode);
+    std::vector<interpreter::Instr> GetProgram();
     ~Interpreter();
 
   private:
+    std::vector<interpreter::Instr> program_;
     Decoder *decoder_;
     Runner *runner_;
 };

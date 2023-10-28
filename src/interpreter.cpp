@@ -5,10 +5,14 @@
 #include <vector>
 
 #include "../include/interpreter.h"
+#include "../isa/instructions.h"
 #include "../include/vm.h"
 #include "../include/decoder.h"
 #include "../include/runner.h"
-#include "../isa/instructions.h"
+
+std::vector<interpreter::Instr> Interpreter::GetProgram() {
+  return program_;
+}
 
 Interpreter::Interpreter() {
     decoder_ = new Decoder();
@@ -34,11 +38,19 @@ void Interpreter::loadProgram(const std::string &filename) {
         std::string word;
         while (iss >> word) {
             if (instructions_map.find(word) != instructions_map.end()) {
-                program.push_back(
-                    static_cast<uint64_t>(instructions_map[word]));
-                // std::cout << word << std::endl;
+                program_.push_back(
+                    static_cast<interpreter::Instr>(instructions_map[word]));
+                continue;
             }
             if (cells_map.find(word) != cells_map.end()) {
+                program_.push_back(
+                    static_cast<interpreter::Instr>(cells_map[word]));
+                continue;
+            }
+            if (f_cells_map.find(word) != f_cells_map.end()) {
+                program_.push_back(
+                    static_cast<interpreter::Instr>(cells_map[word]));
+                continue;
             }
         }
     }

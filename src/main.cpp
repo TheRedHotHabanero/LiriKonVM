@@ -18,9 +18,10 @@ int main() {
 
     prog_name = "examples/square.bin";
 
-    Interpreter interpreter;
-    interpreter.loadProgram(prog_name);
-    interpreter.executeProgram();
+    Interpreter *interpreter = new Interpreter();
+    interpreter->loadProgram(prog_name);
+    std::vector<interpreter::Instr> program = interpreter->GetProgram();
+    interpreter->executeProgram(reinterpret_cast<interpreter::Byte *>(program.data()));
 
     return 0;
 }

@@ -1,6 +1,7 @@
 #ifndef INCLUDE_VM_H
 #define INCLUDE_VM_H
 
+#include <cstdint>
 namespace interpreter {
 
 using Byte = uint64_t;

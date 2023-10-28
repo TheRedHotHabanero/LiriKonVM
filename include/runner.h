@@ -2,23 +2,15 @@
 #define INCLUDE_RUNNER_H
 
 #include <vector>
-#include "instruction.h"
-#include "../isa/instructions.h"
 #include "vm.h"
-
 
 class Runner final {
 public:
-    Runner() {
-        // return new Runner;
-    };
-    ~Runner() {
-        if (this == nullptr) {
-            return;
-        }
-        delete this;
-    };
+    Runner() = default;
+    ~Runner() = default;
+
     bool Run(Instruction);
+
     std::vector<interpreter::IReg> &GetIRegs() {
         return iRegs_;
     }

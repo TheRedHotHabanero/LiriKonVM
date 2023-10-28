@@ -1,14 +1,14 @@
 #ifndef INSTRUCTIONS_H
 #define INSTRUCTIONS_H
-
 #include <unordered_map>
+#include <iostream>
 
 namespace vm_numbers {
     constexpr uint64_t OPCODE_NUM = 21;
     constexpr uint64_t REG_NUM = 9;
 }
 
-enum class OpCode : uint64_t {
+enum OpCode : uint64_t {
     // Arithmetical
     ADD,
     SUB,
