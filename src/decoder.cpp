@@ -1,5 +1,9 @@
 #include "../include/decoder.h"
 
+Decoder *Decoder::Init() {
+    return new Decoder;
+}
+
 Instruction Decoder::decodeInstruction(interpreter::Instr intr_to_decode) {
     interpreter::OpCode opcode = static_cast<interpreter::OpCode>(intr_to_decode & (1ULL << 8 - 1));
     interpreter::RegID reg_id = ((intr_to_decode >> 8) & (1ULL << 8 - 1));

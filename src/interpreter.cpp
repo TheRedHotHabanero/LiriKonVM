@@ -15,8 +15,8 @@ std::vector<interpreter::Instr> Interpreter::GetProgram() {
 }
 
 Interpreter::Interpreter() {
-    decoder_ = new Decoder();
-    runner_ = new Runner();
+    decoder_ = Decoder::Init();
+    runner_ = Runner::Init();
 }
 
 Interpreter::~Interpreter() {
@@ -63,6 +63,7 @@ interpreter::Instr Interpreter::executeInstruction(interpreter::Byte *bytecode, 
 }
 
 void Interpreter::executeProgram(interpreter::Byte *bytecode) {
+    std::cout << "execute" << std::endl;
     static void *dispatch_table[] = {&&HANDLE_ADD,
                                      &&HANDLE_SUB,
                                      &&HANDLE_MUL,
@@ -85,15 +86,17 @@ void Interpreter::executeProgram(interpreter::Byte *bytecode) {
                                      &&HANDLE_INVALID};
     auto &iregisters = runner_->GetIRegs();
     auto &fregisters = runner_->GetFRegs();
-    interpreter::IReg &pc = iregisters[9];
-    Instruction *cur_instr = new Instruction;
+    interpreter::IReg &pc = iregisters[vm_numbers::REG_NUM];
+    Instruction *cur_instr = new Instruction();
+    std::cout << "execute 1" << std::endl;
     *cur_instr = decoder_->decodeInstruction(executeInstruction(bytecode, pc));
-    goto *dispatch_table[cur_instr->GetSecondReg()];
+    std::cout << "execute 2" << std::endl;
+    goto *dispatch_table[cur_instr->GetInstOpcode()];
 
     #define NEXT()                                                                  \
         pc += 4;                                                                    \
         *cur_instr = decoder_->decodeInstruction(executeInstruction(bytecode, pc)); \
-        goto *dispatch_table[cur_instr->GetSecondReg()];                            \
+        goto *dispatch_table[cur_instr->GetInstOpcode()];                           \
 
 HANDLE_ADD:
     iregisters[IRegisters::ACC] = iregisters[cur_instr->reg_id] + iregisters[cur_instr->GetSecondReg()];

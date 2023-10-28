@@ -9,6 +9,8 @@ public:
     Decoder() = default;
     ~Decoder() = default;
     Instruction decodeInstruction(interpreter::Instr intr_to_decode);
+
+    static Decoder *Init();
 };
 
 #endif  // INCLUDE_DECODER_HPP

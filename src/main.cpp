@@ -2,12 +2,13 @@
 
 int main() {
     int prog_num;
+
     std::string prog_name;
     std::cout << "Enter the number of executing program. "
-                 "Press 1 to run examples/square.bin. "
-              << "Press 2 to quit."
+                 "Press 1 to run square.bin. Press 2 to quit."
               << std::endl;
     std::cin >> prog_num;
+
     if (prog_num == 2) {
         std::cout << "Goodbye!" << std::endl;
         return 0;
@@ -22,6 +23,8 @@ int main() {
     interpreter->loadProgram(prog_name);
     std::vector<interpreter::Instr> program = interpreter->GetProgram();
     interpreter->executeProgram(reinterpret_cast<interpreter::Byte *>(program.data()));
+
+    delete interpreter;
 
     return 0;
 }

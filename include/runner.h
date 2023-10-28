@@ -17,6 +17,9 @@ public:
     std::vector<interpreter::FReg> &GetFRegs() {
         return fRegs_;
     }
+    static Runner *Init() {
+        return new Runner;
+    }
 
 private:
     std::vector<interpreter::IReg> iRegs_;
