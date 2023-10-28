@@ -53,15 +53,16 @@ void Interpreter::loadProgram(const std::string &filename) {
                     static_cast<interpreter::Instr>(cells_map[word]));
                 counter += 1;
             }
-        }
-        if (counter == 4) {
-            program_.push_back(parse_4(words_[words_.size() - 4], words_[words_.size()- 3], words_[words_.size() - 2], words_[words_.size() - 1]));
-        } else if (counter == 3) {
+        };
+        if (counter == 3) {
             program_.push_back(parse_3(words_[words_.size()- 3], words_[words_.size() - 2], words_[words_.size() - 1]));
         } else if (counter == 2) {
             program_.push_back(parse_2(words_[words_.size() - 2], words_[words_.size() - 1]));
         } else if (counter == 1) {
             program_.push_back(parse_1(words_[words_.size() - 1]));
+        } else {
+            std::cerr << "Error in creating instruction." << std::endl;
+            return;
         }
     }
 
@@ -207,28 +208,94 @@ HANDLE_INVALID:
     exit(1);
 }
 
-interpreter::Instr parse_4(interpreter::Instr opcode, interpreter::Instr dest, interpreter::Instr source_1, interpreter::Instr source_2) {
+interpreter::Instr Interpreter::parse_3(interpreter::Instr opcode, interpreter::Instr source_1, interpreter::Instr source_2) {
 
     interpreter::Instr value = 0;
-    interpreter::RegID reg_id = dest;
-    interpreter::Imm imm = 
+    interpreter::RegID reg_id = source_1;
+    interpreter::Imm imm = source_2;
     switch (opcode)
     {
         case OpCode::ADD:
+            value |= OpCode::ADD;
         case OpCode::DIV:
+            value |= OpCode::DIV;
         case OpCode::SUB:
+            value |= OpCode::SUB;
         case OpCode::MUL:
+            value |= OpCode::MUL;
         case OpCode::AND:
+            value |= OpCode::AND;
         case OpCode::OR:
+            value |= OpCode::OR;
         case OpCode::XOR:
-        case OpCode::NEG: 
-            std::cout << "hehe";
+            value |= OpCode::XOR;
+        case OpCode::NEG:
+            value |= OpCode::NEG;
+        case OpCode::MOV_REG_TO_REG:
+            value |= OpCode::MOV_REG_TO_REG;
+        // --------------------------------
+        case OpCode::ADDF:
+            value |= OpCode::ADDF;
+        case OpCode::DIVF:
+            value |= OpCode::DIVF;
+        case OpCode::SUBF:
+            value |= OpCode::SUBF;
+        case OpCode::MULF:
+            value |= OpCode::MULF;
+        case OpCode::NEGF:
+            value |= OpCode::NEGF;
+        case OpCode::MOV_REG_TO_REGF:
+            value |= OpCode::MOV_REG_TO_REGF;
         default:
-            value |= (reg_id << 8);
-            value |= (imm << 16);
+            value |= (reg_id << 64);
+            value |= (imm << 64);
             break;
     }
+    return value;
 }
-interpreter::Instr parse_3(interpreter::Instr opcode, interpreter::Instr dest, interpreter::Instr source) {};
-interpreter::Instr parse_2(interpreter::Instr opcode, interpreter::Instr dest) {};
-interpreter::Instr parse_1(interpreter::Instr opcode) {};
+
+interpreter::Instr Interpreter::parse_2(interpreter::Instr opcode, interpreter::Instr source) {
+    interpreter::Instr value = 0;
+    switch (opcode) {
+        case OpCode::INPUT:
+            value |= OpCode::INPUT;
+            break;
+        case OpCode::INPUTF:
+            value |= OpCode::INPUTF;
+            break;
+        case OpCode::MOV_IMM_TO_ACC:
+            value |= OpCode::MOV_IMM_TO_ACC;
+            value |= ((source >> 64) & (1ULL << 64  - 1)) << 128;
+            value |= (source & (1ULL << 64  - 1)) << 192;
+            break;
+        case OpCode::MOV_IMM_TO_ACCF:
+            value |= OpCode::MOV_IMM_TO_ACCF;
+            value |= ((source >> 64) & (1ULL << 64  - 1)) << 128;
+            value |= (source & (1ULL << 64  - 1)) << 192;
+            break;
+        case OpCode::OUTPUT:
+            value |= OpCode::OUTPUT;
+            value |= (source << 8);
+            break;
+        case OpCode::OUTPUTF:
+            value |= OpCode::OUTPUTF;
+            value |= (source << 8);
+            break;
+        default:
+            break;
+    }
+    return value;
+}
+
+interpreter::Instr Interpreter::parse_1(interpreter::Instr opcode) {
+    switch (opcode)
+    {
+        case OpCode::RETURN:
+            return 0;
+        case OpCode::INVALID:
+            return 1;
+        default:
+            break;
+
+    }
+}

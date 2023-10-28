@@ -28,8 +28,8 @@ enum OpCode : uint64_t {
     NEGF,
 
     // Bitwise
-    SHL,
-    SHR,
+    SHL, // not working now
+    SHR, // not working now
 
     // Memory
     MOV_IMM_TO_ACC,
