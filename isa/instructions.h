@@ -4,7 +4,7 @@
 #include <iostream>
 
 namespace vm_numbers {
-    constexpr uint64_t OPCODE_NUM = 21;
+    constexpr uint64_t OPCODE_NUM = 30;
     constexpr uint64_t REG_NUM = 9;
 }
 
@@ -15,11 +15,17 @@ enum OpCode : uint64_t {
     MUL,
     DIV,
 
+    ADDF,
+    SUBF,
+    MULF,
+    DIVF,
+
     // Logical
     AND,
     OR,
     XOR,
     NEG,
+    NEGF,
 
     // Bitwise
     SHL,
@@ -28,10 +34,14 @@ enum OpCode : uint64_t {
     // Memory
     MOV_IMM_TO_ACC,
     MOV_REG_TO_REG,
+    MOV_IMM_TO_ACCF,
+    MOV_REG_TO_REGF,
 
     // Math + IO
     INPUT,
     OUTPUT,
+    INPUTF,
+    OUTPUTF,
     RETURN,
     SIN,
     COS,
@@ -70,16 +80,25 @@ std::unordered_map<std::string, OpCode> instructions_map{
     {"SUB", OpCode::SUB},
     {"MUL", OpCode::MUL},
     {"DIV", OpCode::DIV},
+    {"ADDF", OpCode::ADDF},
+    {"SUBF", OpCode::SUBF},
+    {"MULF", OpCode::MULF},
+    {"DIVF", OpCode::DIVF},
     {"AND", OpCode::AND},
     {"OR", OpCode::OR},
     {"XOR", OpCode::XOR},
     {"SHL", OpCode::SHL},
     {"SHR", OpCode::SHR},
     {"NEG", OpCode::NEG},
+    {"NEGF", OpCode::NEGF},
     {"MOV_IMM_TO_ACC", OpCode::MOV_IMM_TO_ACC},
     {"MOV_REG_TO_REG", OpCode::MOV_REG_TO_REG},
+    {"MOV_IMM_TO_ACCF", OpCode::MOV_IMM_TO_ACCF},
+    {"MOV_REG_TO_REGF", OpCode::MOV_REG_TO_REGF},
     {"INPUT", OpCode::INPUT},
     {"OUTPUT", OpCode::OUTPUT},
+    {"INPUTF", OpCode::INPUTF},
+    {"OUTPUTF", OpCode::OUTPUTF},
     {"RETURN", OpCode::RETURN},
     {"SIN", OpCode::SIN},
     {"COS", OpCode::COS},

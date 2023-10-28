@@ -3,13 +3,12 @@
 
 #include "instruction.h"
 #include "vm.h"
+#include <iostream>
 
-class Decoder final {
-public:
+struct Decoder final {
     Decoder() = default;
     ~Decoder() = default;
     Instruction decodeInstruction(interpreter::Instr intr_to_decode);
-
     static Decoder *Init();
 };
 
