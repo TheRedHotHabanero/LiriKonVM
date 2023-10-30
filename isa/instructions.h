@@ -31,6 +31,8 @@ enum OpCode : uint64_t {
     MOV_REG_TO_REG,
     MOV_IMM_TO_ACCF,
     MOV_REG_TO_REGF,
+    MOV_ACC_TO_REG,
+    MOV_ACC_TO_REGF,
 
     // Math + IO
     INPUT,
@@ -87,8 +89,10 @@ std::unordered_map<std::string, OpCode> instructions_map{
     {"NEG", OpCode::NEG},
     {"NEGF", OpCode::NEGF},
     {"MOV_IMM_TO_ACC", OpCode::MOV_IMM_TO_ACC},
+    {"MOV_ACC_TO_REG", OpCode::MOV_ACC_TO_REG},
     {"MOV_REG_TO_REG", OpCode::MOV_REG_TO_REG},
     {"MOV_IMM_TO_ACCF", OpCode::MOV_IMM_TO_ACCF},
+    {"MOV_ACC_TO_REGF", OpCode::MOV_ACC_TO_REGF},
     {"MOV_REG_TO_REGF", OpCode::MOV_REG_TO_REGF},
     {"INPUT", OpCode::INPUT},
     {"OUTPUT", OpCode::OUTPUT},
@@ -109,8 +113,8 @@ std::unordered_map<std::string, IRegisters> cells_map {
 };
 
 std::unordered_map<std::string, FRegisters> f_cells_map {
-    {"fr0", FRegisters::FR0}, {"fr1", FRegisters::FR1}, {"f2", FRegisters::FR2},
-    {"fr3", FRegisters::FR3}, {"fr4", FRegisters::FR4}, {"f5", FRegisters::FR5},
+    {"fr0", FRegisters::FR0}, {"fr1", FRegisters::FR1}, {"fr2", FRegisters::FR2},
+    {"fr3", FRegisters::FR3}, {"fr4", FRegisters::FR4}, {"fr5", FRegisters::FR5},
     {"fr6", FRegisters::FR6}, {"fr7", FRegisters::FR7}, {"facc", FRegisters::FACC},
 };
 

@@ -9,7 +9,7 @@ namespace vm_numbers {
 namespace interpreter {
 
 using Byte = uint8_t;
-using IReg = int8_t;
+using IReg = int;
 using FReg = double;
 using Instr = uint32_t;
 

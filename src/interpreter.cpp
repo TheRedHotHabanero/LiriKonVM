@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <cstdlib>
 
 #include "../include/interpreter.h"
 #include "../isa/instructions.h"
@@ -38,17 +39,27 @@ void Interpreter::loadProgram(const std::string &filename) {
         std::string word;
         int counter = 0;
         while (iss >> word) {
+            uint16_t num_arg = 0;
             if (instructions_map.find(word) != instructions_map.end()) {
                 words_.push_back(instructions_map[word]);
                 counter += 1;
             }
-            if (cells_map.find(word) != cells_map.end()) {
+            else if (cells_map.find(word) != cells_map.end()) {
                 words_.push_back(cells_map[word]);
                 counter += 1;
             }
-            if (f_cells_map.find(word) != f_cells_map.end()) {
+            else if (f_cells_map.find(word) != f_cells_map.end()) {
                 words_.push_back(cells_map[word]);
                 counter += 1;
+            }
+            else {
+                try
+                {
+                    num_arg = std::stoi(word);
+                    words_.push_back(num_arg);
+                    counter += 1;
+                }
+                catch(std::invalid_argument const& ex) {}
             }
         };
         if (counter == 3) {
@@ -58,6 +69,7 @@ void Interpreter::loadProgram(const std::string &filename) {
         } else if (counter == 1) {
             program_.push_back(parse_1(words_[words_.size() - 1]));
         } else {
+            std::cout << counter << std::endl;
             std::cerr << "Error in creating instruction." << std::endl;
         }
     }
@@ -89,6 +101,8 @@ void Interpreter::executeProgram(interpreter::Byte *bytecode) {
                                      &&HANDLE_MOV_REG_TO_REG,
                                      &&HANDLE_MOV_IMM_TO_ACCF,
                                      &&HANDLE_MOV_REG_TO_REGF,
+                                     &&HANDLE_MOV_ACC_TO_REG,
+                                     &&HANDLE_MOV_ACC_TO_REGF,
                                      &&HANDLE_INPUT,
                                      &&HANDLE_OUTPUT,
                                      &&HANDLE_INPUTF,
@@ -113,7 +127,6 @@ void Interpreter::executeProgram(interpreter::Byte *bytecode) {
 
 HANDLE_ADD:
     iregisters[IRegisters::ACC] = iregisters[cur_instr->reg_id] + iregisters[cur_instr->GetSecondReg()];
-    std::cout << "navalil" << static_cast<int>(iregisters[IRegisters::ACC]) << std::endl;
     NEXT();
 HANDLE_ADDF:
     fregisters[FRegisters::FACC] = fregisters[cur_instr->reg_id] + fregisters[cur_instr->GetSecondReg()];
@@ -165,6 +178,12 @@ HANDLE_MOV_IMM_TO_ACC:
 HANDLE_MOV_IMM_TO_ACCF:
     fregisters[FRegisters::FACC] = cur_instr->imm;
     NEXT();
+HANDLE_MOV_ACC_TO_REG:
+    iregisters[cur_instr->reg_id] = iregisters[IRegisters::ACC];
+    NEXT();
+HANDLE_MOV_ACC_TO_REGF:
+    fregisters[cur_instr->reg_id] = fregisters[FRegisters::FACC];
+    NEXT();
 HANDLE_MOV_REG_TO_REG:
     iregisters[cur_instr->reg_id] = iregisters[cur_instr->GetSecondReg()];
     NEXT();
@@ -178,10 +197,10 @@ HANDLE_INPUTF:
     std::cin >> fregisters[cur_instr->reg_id];
     NEXT();
 HANDLE_OUTPUT:
-    std::cout << iregisters[IRegisters::ACC];
+    std::cout << iregisters[IRegisters::ACC] << std::endl;
     NEXT();
 HANDLE_OUTPUTF:
-    std::cout << fregisters[FRegisters::FACC];
+    std::cout << fregisters[FRegisters::FACC]<< std::endl;
     NEXT();
 HANDLE_RETURN:
     delete cur_instr;
@@ -196,7 +215,7 @@ HANDLE_SQRT:
     fregisters[FRegisters::FACC] = std::sqrt(fregisters[cur_instr->reg_id]);
     NEXT();
 HANDLE_POW:
-    iregisters[FRegisters::FACC] = std::pow(fregisters[cur_instr->reg_id], cur_instr->imm);
+    iregisters[FRegisters::FACC] = std::pow(fregisters[cur_instr->reg_id], fregisters[cur_instr->GetSecondReg()]);
     NEXT();
 HANDLE_INVALID:
     std::cerr << "Error: Unknown opcode " << std::endl;
@@ -206,6 +225,7 @@ HANDLE_INVALID:
 interpreter::Instr Interpreter::parse_3(uint8_t opcode, uint32_t source_1, uint32_t source_2) {
 
     interpreter::Instr value = 0;
+
 
     switch (opcode)
     {
@@ -255,6 +275,9 @@ interpreter::Instr Interpreter::parse_3(uint8_t opcode, uint32_t source_1, uint3
         case OpCode::MOV_REG_TO_REGF:
             value |= OpCode::MOV_REG_TO_REGF;
             break;
+        case OpCode::POW:
+            value |= OpCode::POW;
+            break;
         default:
             break;
     }
@@ -276,22 +299,20 @@ interpreter::Instr Interpreter::parse_2(uint8_t opcode, uint32_t source) {
             break;
         case OpCode::MOV_IMM_TO_ACC:
             value |= OpCode::MOV_IMM_TO_ACC;
-            value |= ((source >> 8) & (1ULL << 8  - 1)) << 16;
-            value |= (source & (1ULL << 8  - 1)) << 24;
+            value |= ((source >> 8) & ((1UL << 8)  - 1)) << 16;
+            value |= (source & ((1UL << 8)  - 1)) << 24;
             break;
         case OpCode::MOV_IMM_TO_ACCF:
             value |= OpCode::MOV_IMM_TO_ACCF;
-            value |= ((source >> 8) & (1ULL << 8  - 1)) << 16;
-            value |= (source & (1ULL << 8  - 1)) << 24;
+            value |= ((source >> 8) & ((1UL << 8)  - 1)) << 16;
+            value |= (source & ((1UL << 8)  - 1)) << 24;
             break;
-        case OpCode::OUTPUT:
-            value |= OpCode::OUTPUT;
+        case OpCode::MOV_ACC_TO_REG:
+            value |= OpCode::MOV_ACC_TO_REG;
             value |= (source << 8);
-            break;
-        case OpCode::OUTPUTF:
-            value |= OpCode::OUTPUTF;
+        case OpCode::MOV_ACC_TO_REGF:
+            value |= OpCode::MOV_ACC_TO_REGF;
             value |= (source << 8);
-            break;
         default:
             break;
     }
@@ -306,6 +327,10 @@ interpreter::Instr Interpreter::parse_1(uint8_t opcode) {
             return value |= OpCode::RETURN;
         case OpCode::INVALID:
             return value |= OpCode::INVALID;
+        case OpCode::OUTPUT:
+            return value |= OpCode::OUTPUT;
+        case OpCode::OUTPUTF:
+            return value |= OpCode::OUTPUTF;
         default:
             return value |= OpCode::INVALID;
     }
