@@ -69,7 +69,6 @@ void Interpreter::loadProgram(const std::string &filename) {
         } else if (counter == 1) {
             program_.push_back(parse_1(words_[words_.size() - 1]));
         } else {
-            std::cout << counter << std::endl;
             std::cerr << "Error in creating instruction." << std::endl;
         }
     }
@@ -141,14 +140,21 @@ HANDLE_MUL:
     iregisters[IRegisters::ACC] = iregisters[cur_instr->reg_id] * iregisters[cur_instr->GetSecondReg()];
     NEXT();
 HANDLE_MULF:
+    std::cout << "first = " << fregisters[cur_instr->reg_id] << ", second = " << fregisters[cur_instr->GetSecondReg()] << std::endl;
     fregisters[FRegisters::FACC] = fregisters[cur_instr->reg_id] * fregisters[cur_instr->GetSecondReg()];
     NEXT();
 HANDLE_DIV:
-    // TODO: add case with zero div
+    if (iregisters[cur_instr->GetSecondReg()] == 0) {
+        std::cerr << "Error. Devision by zero." << std::endl;
+        return;
+    }
     iregisters[IRegisters::ACC] = iregisters[cur_instr->reg_id] / iregisters[cur_instr->GetSecondReg()];
     NEXT();
 HANDLE_DIVF:
-    // TODO: add case with zero div
+    if (fregisters[cur_instr->GetSecondReg()] == 0) {
+        std::cerr << "Error. Devision by zero." << std::endl;
+        return;
+    }
     fregisters[FRegisters::FACC] = fregisters[cur_instr->reg_id] / fregisters[cur_instr->GetSecondReg()];
     NEXT();
 HANDLE_AND:
@@ -176,13 +182,13 @@ HANDLE_MOV_IMM_TO_ACC:
     iregisters[IRegisters::ACC] = cur_instr->imm;
     NEXT();
 HANDLE_MOV_IMM_TO_ACCF:
-    fregisters[FRegisters::FACC] = cur_instr->imm;
+    fregisters[FRegisters::FACC] = static_cast<double>(cur_instr->imm);
     NEXT();
 HANDLE_MOV_ACC_TO_REG:
-    iregisters[cur_instr->reg_id] = iregisters[IRegisters::ACC];
+    iregisters[cur_instr->imm] = iregisters[IRegisters::ACC];
     NEXT();
 HANDLE_MOV_ACC_TO_REGF:
-    fregisters[cur_instr->reg_id] = fregisters[FRegisters::FACC];
+    fregisters[cur_instr->imm] = fregisters[FRegisters::FACC];
     NEXT();
 HANDLE_MOV_REG_TO_REG:
     iregisters[cur_instr->reg_id] = iregisters[cur_instr->GetSecondReg()];
@@ -197,10 +203,10 @@ HANDLE_INPUTF:
     std::cin >> fregisters[cur_instr->reg_id];
     NEXT();
 HANDLE_OUTPUT:
-    std::cout << iregisters[IRegisters::ACC] << std::endl;
+    std::cout << "Output: "<< iregisters[IRegisters::ACC] << std::endl;
     NEXT();
 HANDLE_OUTPUTF:
-    std::cout << fregisters[FRegisters::FACC]<< std::endl;
+    std::cout << "Output: " << fregisters[FRegisters::FACC]<< std::endl;
     NEXT();
 HANDLE_RETURN:
     delete cur_instr;
@@ -212,10 +218,14 @@ HANDLE_COS:
     fregisters[FRegisters::FACC] = std::cos(fregisters[cur_instr->reg_id]);
     NEXT();
 HANDLE_SQRT:
+    if (fregisters[cur_instr->reg_id] < 0) {
+        std::cerr << "Error. Expression for sqrt is < 0." << std::endl;
+        return;
+    }
     fregisters[FRegisters::FACC] = std::sqrt(fregisters[cur_instr->reg_id]);
     NEXT();
 HANDLE_POW:
-    iregisters[FRegisters::FACC] = std::pow(fregisters[cur_instr->reg_id], fregisters[cur_instr->GetSecondReg()]);
+    fregisters[FRegisters::FACC] = std::pow(fregisters[cur_instr->reg_id], fregisters[cur_instr->GetSecondReg()]);
     NEXT();
 HANDLE_INVALID:
     std::cerr << "Error: Unknown opcode " << std::endl;
