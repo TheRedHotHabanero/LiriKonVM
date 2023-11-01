@@ -49,7 +49,7 @@ void Interpreter::loadProgram(const std::string &filename) {
                 counter += 1;
             }
             else if (f_cells_map.find(word) != f_cells_map.end()) {
-                words_.push_back(cells_map[word]);
+                words_.push_back(f_cells_map[word]);
                 counter += 1;
             }
             else {
@@ -176,6 +176,7 @@ HANDLE_NEG:
     iregisters[IRegisters::ACC] = -iregisters[cur_instr->reg_id];
     NEXT();
 HANDLE_NEGF:
+    std::cout << "fr2: "<< fregisters[FRegisters::FR2] << std::endl;
     fregisters[FRegisters::FACC] = -fregisters[cur_instr->reg_id];
     NEXT();
 HANDLE_MOV_IMM_TO_ACC:
@@ -185,10 +186,10 @@ HANDLE_MOV_IMM_TO_ACCF:
     fregisters[FRegisters::FACC] = static_cast<double>(cur_instr->imm);
     NEXT();
 HANDLE_MOV_ACC_TO_REG:
-    iregisters[cur_instr->imm] = iregisters[IRegisters::ACC];
+    iregisters[cur_instr->reg_id] = iregisters[IRegisters::ACC];
     NEXT();
 HANDLE_MOV_ACC_TO_REGF:
-    fregisters[cur_instr->imm] = fregisters[FRegisters::FACC];
+    fregisters[cur_instr->reg_id] = fregisters[FRegisters::FACC];
     NEXT();
 HANDLE_MOV_REG_TO_REG:
     iregisters[cur_instr->reg_id] = iregisters[cur_instr->GetSecondReg()];
@@ -279,9 +280,6 @@ interpreter::Instr Interpreter::parse_3(uint8_t opcode, uint32_t source_1, uint3
         case OpCode::MULF:
             value |= OpCode::MULF;
             break;
-        case OpCode::NEGF:
-            value |= OpCode::NEGF;
-            break;
         case OpCode::MOV_REG_TO_REGF:
             value |= OpCode::MOV_REG_TO_REGF;
             break;
@@ -305,6 +303,14 @@ interpreter::Instr Interpreter::parse_2(uint8_t opcode, uint32_t source) {
             break;
         case OpCode::INPUTF:
             value |= OpCode::INPUTF;
+            value |= (source << 8);
+            break;
+        case OpCode::NEGF:
+            value |= OpCode::NEGF;
+            value |= (source << 8);
+            break;
+        case OpCode::SQRT:
+            value |= OpCode::SQRT;
             value |= (source << 8);
             break;
         case OpCode::MOV_IMM_TO_ACC:
