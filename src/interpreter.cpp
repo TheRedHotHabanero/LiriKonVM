@@ -92,10 +92,10 @@ void Interpreter::executeProgram(interpreter::Byte *bytecode) {
                                      &&HANDLE_AND,
                                      &&HANDLE_OR,
                                      &&HANDLE_XOR,
-                                     &&HANDLE_SHL,
-                                     &&HANDLE_SHR,
                                      &&HANDLE_NEG,
                                      &&HANDLE_NEGF,
+                                     &&HANDLE_SHL,
+                                     &&HANDLE_SHR,
                                      &&HANDLE_MOV_IMM_TO_ACC,
                                      &&HANDLE_MOV_REG_TO_REG,
                                      &&HANDLE_MOV_IMM_TO_ACCF,
@@ -140,7 +140,6 @@ HANDLE_MUL:
     iregisters[IRegisters::ACC] = iregisters[cur_instr->reg_id] * iregisters[cur_instr->GetSecondReg()];
     NEXT();
 HANDLE_MULF:
-    std::cout << "first = " << fregisters[cur_instr->reg_id] << ", second = " << fregisters[cur_instr->GetSecondReg()] << std::endl;
     fregisters[FRegisters::FACC] = fregisters[cur_instr->reg_id] * fregisters[cur_instr->GetSecondReg()];
     NEXT();
 HANDLE_DIV:
@@ -176,7 +175,6 @@ HANDLE_NEG:
     iregisters[IRegisters::ACC] = -iregisters[cur_instr->reg_id];
     NEXT();
 HANDLE_NEGF:
-    std::cout << "fr2: "<< fregisters[FRegisters::FR2] << std::endl;
     fregisters[FRegisters::FACC] = -fregisters[cur_instr->reg_id];
     NEXT();
 HANDLE_MOV_IMM_TO_ACC:

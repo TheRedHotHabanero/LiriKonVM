@@ -7,7 +7,7 @@ Decoder *Decoder::Init() {
 
 Instruction Decoder::decodeInstruction(interpreter::Instr intr_to_decode) {
     interpreter::OpCode opcode = static_cast<interpreter::OpCode>(intr_to_decode & ((1UL << 8) - 1));
-    std::cout << "OPCODE " << static_cast<int>(opcode) << std::endl;
+    //std::cout << "OPCODE " << static_cast<int>(opcode) << std::endl;
     interpreter::RegID reg_id = static_cast<interpreter::RegID>(((intr_to_decode >> 8) & ((1UL << 8) - 1)));
     //std::cout << static_cast<int>(reg_id) << std::endl;
     uint16_t upper_value = ((intr_to_decode >> 16) & ((1UL << 8) - 1));
