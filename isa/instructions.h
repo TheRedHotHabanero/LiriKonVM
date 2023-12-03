@@ -1,7 +1,7 @@
 #ifndef INSTRUCTIONS_H
 #define INSTRUCTIONS_H
-#include <unordered_map>
 #include <iostream>
+#include <unordered_map>
 
 enum OpCode : uint64_t {
     // Arithmetical
@@ -106,16 +106,18 @@ std::unordered_map<std::string, OpCode> instructions_map{
     {"INVALID", OpCode::INVALID},
 };
 
-std::unordered_map<std::string, IRegisters> cells_map {
+std::unordered_map<std::string, IRegisters> cells_map{
     {"r0", IRegisters::R0}, {"r1", IRegisters::R1}, {"r2", IRegisters::R2},
     {"r3", IRegisters::R3}, {"r4", IRegisters::R4}, {"r5", IRegisters::R5},
     {"r6", IRegisters::R6}, {"r7", IRegisters::R7}, {"ACC", IRegisters::ACC},
 };
 
-std::unordered_map<std::string, FRegisters> f_cells_map {
-    {"fr0", FRegisters::FR0}, {"fr1", FRegisters::FR1}, {"fr2", FRegisters::FR2},
-    {"fr3", FRegisters::FR3}, {"fr4", FRegisters::FR4}, {"fr5", FRegisters::FR5},
-    {"fr6", FRegisters::FR6}, {"fr7", FRegisters::FR7}, {"facc", FRegisters::FACC},
+std::unordered_map<std::string, FRegisters> f_cells_map{
+    {"fr0", FRegisters::FR0},   {"fr1", FRegisters::FR1},
+    {"fr2", FRegisters::FR2},   {"fr3", FRegisters::FR3},
+    {"fr4", FRegisters::FR4},   {"fr5", FRegisters::FR5},
+    {"fr6", FRegisters::FR6},   {"fr7", FRegisters::FR7},
+    {"facc", FRegisters::FACC},
 };
 
 #endif // INSTRUCTIONS_H

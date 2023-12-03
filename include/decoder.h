@@ -12,4 +12,4 @@ struct Decoder final {
     static Decoder *Init();
 };
 
-#endif  // INCLUDE_DECODER_HPP
+#endif // INCLUDE_DECODER_HPP

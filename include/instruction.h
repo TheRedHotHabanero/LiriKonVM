@@ -8,12 +8,8 @@ struct Instruction final {
     interpreter::RegID reg_id;
     interpreter::Imm imm;
 
-    interpreter::RegID GetSecondReg() {
-        return imm >> 8;
-    }
-    interpreter::OpCode GetInstOpcode() {
-        return opcode_;
-    }
+    interpreter::RegID GetSecondReg() { return imm >> 8; }
+    interpreter::OpCode GetInstOpcode() { return opcode_; }
 };
 
 #endif // INCLUDE_INSTRUCTION_H

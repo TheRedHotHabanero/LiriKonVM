@@ -1,11 +1,11 @@
 #ifndef INCLUDE_RUNNER_H
 #define INCLUDE_RUNNER_H
 
-#include <vector>
 #include "vm.h"
+#include <vector>
 
 class Runner final {
-public:
+  public:
     Runner() = default;
     ~Runner() = default;
 
@@ -19,13 +19,11 @@ public:
         fRegs_.resize(vm_numbers::REG_NUM);
         return fRegs_;
     }
-    static Runner *Init() {
-        return new Runner;
-    }
+    static Runner *Init() { return new Runner; }
 
-private:
+  private:
     std::vector<interpreter::IReg> iRegs_;
     std::vector<interpreter::FReg> fRegs_;
 };
 
-#endif  // INCLUDE_RUNNER_H
+#endif // INCLUDE_RUNNER_H
