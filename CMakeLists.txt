@@ -8,6 +8,7 @@ set(COMPILE_OPTIONS
 	-Werror
 	-Wextra
 	#-Wconversion
+	#-Wconversion
 	-Wwrite-strings
 	-Wcast-qual
 	-Wundef
@@ -23,6 +24,8 @@ file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR})
 add_compile_options(${COMPILE_OPTIONS})
 
 add_executable(LiriKonVM
+	${CMAKE_SOURCE_DIR}/src/lexer.cpp
+	${CMAKE_SOURCE_DIR}/src/parser.cpp
 	${CMAKE_SOURCE_DIR}/src/allocator.cpp
     ${CMAKE_SOURCE_DIR}/src/decoder.cpp
     ${CMAKE_SOURCE_DIR}/src/interpreter.cpp

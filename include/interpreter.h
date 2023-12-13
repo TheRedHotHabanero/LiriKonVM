@@ -1,6 +1,7 @@
 #ifndef INCLUDE_INTERPRETER_H
 #define INCLUDE_INTERPRETER_H
 
+#include "parser.h"
 #include "decoder.h"
 #include "runner.h"
 #include "allocator.h"
@@ -11,10 +12,6 @@
 class Interpreter final {
   public:
     Interpreter();
-    interpreter::Instr parse_3(uint8_t opcode, uint32_t source_1,
-                               uint32_t source_2);
-    interpreter::Instr parse_2(uint8_t opcode, uint32_t source);
-    interpreter::Instr parse_1(uint8_t opcode);
     void loadProgram(const std::string &filename);
     interpreter::Instr executeInstruction(interpreter::Byte *bytecode,
                                           interpreter::IReg pc);
@@ -23,10 +20,9 @@ class Interpreter final {
     ~Interpreter();
 
   private:
-    std::vector<uint8_t> words_ = {};
-    std::vector<interpreter::Instr> program_ = {};
     Decoder *decoder_;
     Runner *runner_;
+    Parser *parser_;
     std::unique_ptr<ArenaAllocator> allocator_;
 };
 
