@@ -24,15 +24,17 @@ Interpreter::~Interpreter()
     delete runner_;
 }
 
-void Interpreter::loadProgram(const std::string &filename)
+void Interpreter::loadProgram(const std::string filename)
 {
 
+    std::cout << filename << std::endl;
     std::ifstream file(filename);
     if (!file.is_open())
     {
         std::cerr << "Error: Unable to open the program file." << std::endl;
         exit(1);
     }
+    std::cout << "opened" << std::endl;
 
     parser_->parseProgram(file);
 }

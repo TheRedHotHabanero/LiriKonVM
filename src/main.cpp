@@ -1,21 +1,23 @@
 #include "../include/interpreter.h"
+#include <fstream>
+#include <iostream>
 
 int main() {
-    int prog_num;
-    std::cout << "Enter the number of executing program. Press 1 to run "
-                 "square.bin. Press 2 to quit."
-              << std::endl;
-    std::cin >> prog_num;
+    // int prog_num;
+    // std::cout << "Enter the number of executing program. Press 1 to run "
+    //              "square.bin. Press 2 to quit."
+    //           << std::endl;
+    // std::cin >> prog_num;
 
-    if (prog_num == 2) {
-        std::cout << "Goodbye!" << std::endl;
-        return 0;
-    } else if (prog_num != 1) {
-        std::cout << "Invalid symbols." << std::endl;
-        return 1;
-    }
+    // if (prog_num == 2) {
+    //     std::cout << "Goodbye!" << std::endl;
+    //     return 0;
+    // } else if (prog_num != 1) {
+    //     std::cout << "Invalid symbols." << std::endl;
+    //     return 1;
+    // }
 
-    const std::string prog_name = "examples/square.bin";
+    const std::string prog_name = "../examples/square.bin";
     Interpreter *interpreter = new Interpreter();
     interpreter->loadProgram(prog_name);
     std::vector<interpreter::Instr> program = interpreter->GetProgram();

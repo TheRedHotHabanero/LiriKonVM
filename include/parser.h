@@ -9,12 +9,16 @@
 #include "instruction.h"
 #include "lexer.h"
 
+using opcode_type = uint64_t;
+using regs_type = uint8_t;
 class Parser
 {
 public:
     Parser() : tokens_(), token_type_(TokenType::BAD_TOKEN), position_(0), error_(), instruction_() {}
     ~Parser() = default;
     std::vector<interpreter::Instr> GetProgram();
+    opcode_type TokenToOpcode(TokenType id);
+    regs_type TokenToReg(TokenType id);
     void parseProgram(std::ifstream &file);
 
     std::pair<Instruction, LexerError> Parse(const std::vector<Token> &token)
@@ -67,13 +71,13 @@ public:
 
 private:
     std::vector<interpreter::Instr> program_ = {};
-    std::vector<uint8_t> words_ = {};
+    // std::vector<uint8_t> words_ = {};
     std::vector<Token> tokens_;
     TokenType token_type_;
     size_t position_;
     LexerError error_;
     Instruction instruction_;
-    Lexer *lexer_;
+    Lexer lexer_;
 };
 
 #endif // INCLUDE_LEXER_H

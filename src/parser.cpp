@@ -7,7 +7,7 @@
 
 #include "../isa/instructions.h"
 #include "../include/parser.h"
-
+#include "../include/vm.h"
 
 std::vector<interpreter::Instr> Parser::GetProgram() { return program_; }
 
@@ -47,20 +47,20 @@ interpreter::Instr Parser::parse_3(uint8_t opcode, uint32_t source_1,
         value |= OpCode::MOV_REG_TO_REG;
         break;
     // --------------------------------
-    case OpCode::ADDF:
-        value |= OpCode::ADDF;
+    case OpCode::FADD:
+        value |= OpCode::FADD;
         break;
-    case OpCode::DIVF:
-        value |= OpCode::DIVF;
+    case OpCode::FDIV:
+        value |= OpCode::FDIV;
         break;
-    case OpCode::SUBF:
-        value |= OpCode::SUBF;
+    case OpCode::FSUB:
+        value |= OpCode::FSUB;
         break;
-    case OpCode::MULF:
-        value |= OpCode::MULF;
+    case OpCode::FMUL:
+        value |= OpCode::FMUL;
         break;
-    case OpCode::MOV_REG_TO_REGF:
-        value |= OpCode::MOV_REG_TO_REGF;
+    case OpCode::FMOV_REG_TO_REG:
+        value |= OpCode::FMOV_REG_TO_REG;
         break;
     case OpCode::POW:
         value |= OpCode::POW;
@@ -82,12 +82,12 @@ interpreter::Instr Parser::parse_2(uint8_t opcode, uint32_t source)
         value |= OpCode::INPUT;
         value |= (source << 8);
         break;
-    case OpCode::INPUTF:
-        value |= OpCode::INPUTF;
+    case OpCode::FINPUT:
+        value |= OpCode::FINPUT;
         value |= (source << 8);
         break;
-    case OpCode::NEGF:
-        value |= OpCode::NEGF;
+    case OpCode::FNEG:
+        value |= OpCode::FNEG;
         value |= (source << 8);
         break;
     case OpCode::SQRT:
@@ -99,8 +99,8 @@ interpreter::Instr Parser::parse_2(uint8_t opcode, uint32_t source)
         value |= ((source >> 8) & ((1UL << 8) - 1)) << 16;
         value |= (source & ((1UL << 8) - 1)) << 24;
         break;
-    case OpCode::MOV_IMM_TO_ACCF:
-        value |= OpCode::MOV_IMM_TO_ACCF;
+    case OpCode::FMOV_IMM_TO_ACC:
+        value |= OpCode::FMOV_IMM_TO_ACC;
         value |= ((source >> 8) & ((1UL << 8) - 1)) << 16;
         value |= (source & ((1UL << 8) - 1)) << 24;
         break;
@@ -108,8 +108,8 @@ interpreter::Instr Parser::parse_2(uint8_t opcode, uint32_t source)
         value |= OpCode::MOV_ACC_TO_REG;
         value |= (source << 8);
         break;
-    case OpCode::MOV_ACC_TO_REGF:
-        value |= OpCode::MOV_ACC_TO_REGF;
+    case OpCode::FMOV_ACC_TO_REG:
+        value |= OpCode::FMOV_ACC_TO_REG;
         value |= (source << 8);
         break;
     default:
@@ -129,52 +129,67 @@ interpreter::Instr Parser::parse_1(uint8_t opcode)
         return value |= OpCode::INVALID;
     case OpCode::OUTPUT:
         return value |= OpCode::OUTPUT;
-    case OpCode::OUTPUTF:
-        return value |= OpCode::OUTPUTF;
+    case OpCode::FOUTPUT:
+        return value |= OpCode::FOUTPUT;
     default:
         return value |= OpCode::INVALID;
     }
 }
 
+opcode_type Parser::TokenToOpcode(TokenType id)
+{
+    return static_cast<OpCode>(id);
+}
+
+regs_type Parser::TokenToReg(TokenType id)
+{
+    if (id > vm_numbers::OPCODE_NUM - 1 && id < vm_numbers::OPCODE_NUM + vm_numbers::REG_NUM - 1)
+    {
+        // then its int reg
+        return static_cast<IRegisters>(id - vm_numbers::OPCODE_NUM);
+    }
+    else if (id >= vm_numbers::OPCODE_NUM + vm_numbers::REG_NUM - 1)
+    {
+        // std::cout << id - vm_numbers::OPCODE_NUM - vm_numbers::REG_NUM << std::endl;
+        return static_cast<FRegisters>(id - vm_numbers::OPCODE_NUM - vm_numbers::REG_NUM);
+    }
+    return static_cast<regs_type>(TokenType::BAD_TOKEN);
+}
+
 void Parser::parseProgram(std::ifstream &file)
 {
+    Lexer lexer;
     std::string line;
+    std::vector<uint8_t> words_ = {};
     while (std::getline(file, line))
     {
-        std::istringstream iss(line);
-        std::string word;
+        std::pair<std::vector<Token>, LexerError> tokens_and_errors = lexer.TokenizeString(line);
+        int len = tokens_and_errors.first.size();
         int counter = 0;
-        while (iss >> word)
+        std::cout << "my line is " << line << std::endl;
+        std::cout << " len is " << len << std::endl;
+        for (int i = 0; i < len; ++i)
         {
-            uint16_t num_arg = 0;
-            if (lexer_->isOperation(word) != TokenType::BAD_TOKEN)
+            std::cout << "i = " << i << std::endl;
+            std::cout << "token type = " << tokens_and_errors.first[i].token_type_ << std::endl;
+            auto curr_token_type = tokens_and_errors.first[i].token_type_;
+            std::cout << "new token above " << std::endl;
+            if (curr_token_type != TokenType::BAD_TOKEN)
             {
-                words_.push_back(lexer_->isOperation(word));
-                counter += 1;
-            }
-            else if (lexer_->isIntReg(word) != TokenType::BAD_TOKEN)
-            {
-                words_.push_back(lexer_->isIntReg(word));
-                counter += 1;
-            }
-            else if (lexer_->isFloatReg(word) != TokenType::BAD_TOKEN)
-            {
-                words_.push_back(lexer_->isFloatReg(word));
-                counter += 1;
-            }
-            else
-            {
-                try
+                if (i == 0)
                 {
-                    num_arg = std::stoi(word);
-                    words_.push_back(num_arg);
+                    words_.push_back(TokenToOpcode(curr_token_type)); // we need togive only inst name without operands
+                }
+                else
+                {
+                    // count arguments for future parsing
                     counter += 1;
-                }
-                catch (std::invalid_argument const &ex)
-                {
+                    std::cout << "Token to reg = " << TokenToReg(curr_token_type) << std::endl;
+                    words_.push_back(TokenToReg(curr_token_type));
                 }
             }
-        };
+        }
+
         if (counter == 3)
         {
             program_.push_back(parse_3(words_[words_.size() - 3],

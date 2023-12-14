@@ -1,6 +1,7 @@
 #include <cctype>
 #include <string>
 #include <unordered_map>
+#include <iostream>
 
 #include "../include/lexer.h"
 

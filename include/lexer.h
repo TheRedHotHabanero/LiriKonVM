@@ -4,17 +4,11 @@
 #include <utility>
 #include <vector>
 #include <string>
-
+#include <iostream>
 #include "../isa/isa_for_parser.h"
 
-enum TokenType
+enum TokenType : uint64_t
 {
-    BAD_TOKEN,
-    ID_STRING,
-    COMMA,
-    SQUARE_BRACKET_L,
-    SQUARE_BRACKET_R,
-
 #define OPLIST(code, mnemonic, format) OP_##code,
     ISA(OPLIST)
 #undef OPLIST
@@ -26,6 +20,11 @@ enum TokenType
 #define FLOAT_REGLIST(code, mnemonic, format) REG_##code,
             FLOAT_REGS(FLOAT_REGLIST)
 #undef FLOAT_REGLIST
+    BAD_TOKEN,
+    ID_STRING,
+    COMMA,
+    SQUARE_BRACKET_L,
+    SQUARE_BRACKET_R,
 };
 
 struct Token
@@ -78,8 +77,6 @@ public:
     Lexer() {}
     ~Lexer() = default;
 
-    TokensWithErrors TokenizeString(std::string &tokenize_string);
-
     bool Eol();
     bool LexString();
     void LexTokens();
@@ -94,10 +91,11 @@ public:
     TokenType isFloatReg(std::string reg);
 
     std::vector<Token> tokens_;
-    std::string buffer_;
+    std::string buffer_ {};
     size_t position_;
     size_t end_line_;
     LexerError error_;
+    TokensWithErrors TokenizeString(std::string &tokenize_string);
 };
 
 #endif // INCLUDE_LEXER_H

@@ -3,7 +3,7 @@
 
 #include <cstdint>
 namespace vm_numbers {
-constexpr uint64_t OPCODE_NUM = 30;
+constexpr uint64_t OPCODE_NUM = 31;
 constexpr uint64_t REG_NUM = 9;
 } // namespace vm_numbers
 namespace interpreter {

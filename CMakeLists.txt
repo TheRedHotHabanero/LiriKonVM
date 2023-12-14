@@ -18,6 +18,8 @@ set(COMPILE_OPTIONS
 # Создаем директорию для сборки
 set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/build)
 
+set(CMAKE_BUILD_TYPE Debug)
+
 # Создаем директорию сборки, если она не существует
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR})
 

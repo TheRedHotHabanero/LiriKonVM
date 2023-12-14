@@ -5,51 +5,13 @@
 #include <string>
 #include <vector>
 
+#include "isa_for_parser.h"
+
 enum OpCode : uint64_t
 {
-    // Arithmetical
-    ADD,
-    SUB,
-    MUL,
-    DIV,
-
-    ADDF,
-    SUBF,
-    MULF,
-    DIVF,
-
-    // Logical
-    AND,
-    OR,
-    XOR,
-    NEG,
-    NEGF,
-
-    // Bitwise
-    SHL, // not working now
-    SHR, // not working now
-
-    // Memory
-    MOV_IMM_TO_ACC,
-    MOV_REG_TO_REG,
-    MOV_IMM_TO_ACCF,
-    MOV_REG_TO_REGF,
-    MOV_ACC_TO_REG,
-    MOV_ACC_TO_REGF,
-
-    // Math + IO
-    INPUT,
-    OUTPUT,
-    INPUTF,
-    OUTPUTF,
-    RETURN,
-    SIN,
-    COS,
-    SQRT,
-    POW,
-    
-
-    INVALID,
+#define OPLIST(code, mnemonic, format) code,
+    ISA(OPLIST)
+#undef OPLIST
 };
 
 enum IRegisters : uint8_t

@@ -12,7 +12,7 @@
 class Interpreter final {
   public:
     Interpreter();
-    void loadProgram(const std::string &filename);
+    void loadProgram(const std::string filename);
     interpreter::Instr executeInstruction(interpreter::Byte *bytecode,
                                           interpreter::IReg pc);
     void executeProgram(interpreter::Byte *bytecode);
