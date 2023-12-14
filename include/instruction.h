@@ -3,7 +3,8 @@
 
 #include "vm.h"
 
-struct Instruction final {
+struct Instruction final
+{
     interpreter::OpCode opcode_;
     interpreter::RegID reg_id;
     interpreter::Imm imm;
