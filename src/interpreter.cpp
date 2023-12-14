@@ -4,18 +4,21 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <memory>
 
 #include "../include/decoder.h"
 #include "../include/interpreter.h"
 #include "../include/runner.h"
 #include "../include/vm.h"
 #include "../isa/instructions.h"
+#include "../include/allocator.h"
 
 std::vector<interpreter::Instr> Interpreter::GetProgram() { return program_; }
 
 Interpreter::Interpreter() {
     decoder_ = Decoder::Init();
     runner_ = Runner::Init();
+    allocator_ = std::make_unique<ArenaAllocator>(ArenaAllocator::DEFAULT_ARENA);
 }
 
 Interpreter::~Interpreter() {
@@ -336,9 +339,11 @@ interpreter::Instr Interpreter::parse_2(uint8_t opcode, uint32_t source) {
     case OpCode::MOV_ACC_TO_REG:
         value |= OpCode::MOV_ACC_TO_REG;
         value |= (source << 8);
+        break;
     case OpCode::MOV_ACC_TO_REGF:
         value |= OpCode::MOV_ACC_TO_REGF;
         value |= (source << 8);
+        break;
     default:
         break;
     }

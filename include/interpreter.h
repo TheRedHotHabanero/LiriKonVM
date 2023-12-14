@@ -3,6 +3,7 @@
 
 #include "decoder.h"
 #include "runner.h"
+#include "allocator.h"
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -26,6 +27,7 @@ class Interpreter final {
     std::vector<interpreter::Instr> program_ = {};
     Decoder *decoder_;
     Runner *runner_;
+    std::unique_ptr<ArenaAllocator> allocator_;
 };
 
 #endif // INCLUDE_INTERPRETER_H

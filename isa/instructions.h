@@ -44,6 +44,7 @@ enum OpCode : uint64_t {
     COS,
     SQRT,
     POW,
+    
 
     INVALID,
 };
