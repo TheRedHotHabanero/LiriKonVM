@@ -32,3 +32,6 @@ add_executable(LiriKonVM
     ${CMAKE_SOURCE_DIR}/src/decoder.cpp
     ${CMAKE_SOURCE_DIR}/src/interpreter.cpp
     ${CMAKE_SOURCE_DIR}/src/main.cpp)
+
+include_directories(include)
+include_directories(isa)

@@ -7,32 +7,25 @@
 #include <iostream>
 #include <memory>
 
-class ArenaAllocator
-{
+class ArenaAllocator {
 
 public:
-    ArenaAllocator(size_t capacity = vm_numbers::VM_DEFAULT_ARENA);
-    ~ArenaAllocator();
+  ArenaAllocator(size_t capacity = vm_numbers::VM_DEFAULT_ARENA);
+  ~ArenaAllocator();
 
-    size_t getCapacity() const
-    {
-        return capacity_;
-    }
+  size_t getCapacity() const { return capacity_; }
 
-    size_t getSize() const
-    {
-        return size_;
-    }
+  size_t getSize() const { return size_; }
 
-    void *allocate(size_t size);
+  void *allocate(size_t size);
+  
 
 private:
+  uint8_t *heap_{nullptr};
+  uint8_t *next_allocation_{nullptr};
 
-    uint8_t *heap_{nullptr};
-    uint8_t *next_allocation_{nullptr};
-
-    size_t size_{0};
-    size_t capacity_{0};
+  size_t size_{0};
+  size_t capacity_{0};
 };
 
 #endif // INCLUDE_ARENA_ALLOCATOR_H

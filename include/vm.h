@@ -2,11 +2,14 @@
 #define INCLUDE_VM_H
 
 #include <cstdint>
+
 namespace vm_numbers {
+
 static constexpr uint64_t VM_DEFAULT_ARENA = 1 << 23; // 10 MB
 static constexpr uint64_t VM_DIGIT_NUM = 10;
 static constexpr uint64_t OPCODE_NUM = 31;
 static constexpr uint64_t REG_NUM = 9;
+
 } // namespace vm_numbers
 namespace interpreter {
 
