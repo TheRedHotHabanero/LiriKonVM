@@ -4,6 +4,7 @@
     _(MUL, "MUL", INT_INT)                         \
     _(DIV, "DIV", INT_INT)                         \
     _(FADD, "FADD", INT)                           \
+    _(FSUB, "FSUB", INT)                           \
     _(FMUL, "FMUL", INT_INT)                       \
     _(FDIV, "FDIV", INT_INT)                       \
     _(AND, "AND", INT)                             \
@@ -28,8 +29,7 @@
     _(COS, "COS", INT)                             \
     _(SQRT, "SQRT", INT)                           \
     _(POW, "POW", INT_INT)                         \
-    _(INVALID, "INVALID", INT_INT)                 \
-    _(FSUB, "FSUB", INT)
+    _(INVALID, "INVALID", INT_INT)
 
 #define INT_REGS(_)  \
     _(R0, "r0", INT) \

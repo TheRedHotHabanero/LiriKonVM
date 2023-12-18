@@ -15,7 +15,8 @@ Interpreter::Interpreter()
 {
     decoder_ = Decoder::Init();
     runner_ = Runner::Init();
-    allocator_ = std::make_unique<ArenaAllocator>(ArenaAllocator::DEFAULT_ARENA);
+    parser_ = new Parser();
+    allocator_ = std::make_unique<ArenaAllocator>(vm_numbers::VM_DEFAULT_ARENA);
 }
 
 Interpreter::~Interpreter()
@@ -27,14 +28,12 @@ Interpreter::~Interpreter()
 void Interpreter::loadProgram(const std::string filename)
 {
 
-    std::cout << filename << std::endl;
     std::ifstream file(filename);
     if (!file.is_open())
     {
         std::cerr << "Error: Unable to open the program file." << std::endl;
         exit(1);
     }
-    std::cout << "opened" << std::endl;
 
     parser_->parseProgram(file);
 }

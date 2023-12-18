@@ -20,6 +20,17 @@ enum TokenType : uint64_t
 #define FLOAT_REGLIST(code, mnemonic, format) REG_##code,
             FLOAT_REGS(FLOAT_REGLIST)
 #undef FLOAT_REGLIST
+    ID_NUMBER_0,
+    ID_NUMBER_1,
+    ID_NUMBER_2,
+    ID_NUMBER_3,
+    ID_NUMBER_4,
+    ID_NUMBER_5,
+    ID_NUMBER_6,
+    ID_NUMBER_7,
+    ID_NUMBER_8,
+    ID_NUMBER_9,
+    ID_NUMBER,
     BAD_TOKEN,
     ID_STRING,
     COMMA,
@@ -43,7 +54,7 @@ enum ErrorType
 {
     STATUS_OK,
 
-    ERROR_UNEXPECTED_EOL,
+    ERROR_UNEXPECTED_END_OF_LINE,
 
     ERR_NO_TOKENS,           // empty programm
     ERR_BAD_STRING,          // abbdjhd!!2222200==
@@ -77,13 +88,14 @@ public:
     Lexer() {}
     ~Lexer() = default;
 
-    bool Eol();
-    bool LexString();
-    void LexTokens();
-    void SkipSpace();
-    void AnalyzeLine();
-
+    bool endOfLine();
+    bool lexString();
+    void lexTokens();
+    void skipSpace();
+    void progessSingleLine();
+    bool isDigit(char c);
     bool isQuote(char c);
+    TokenType whichDigit(char c);
     TokenType isSpecialSymbol(char c);
     TokenType getType(size_t bound_l, size_t bound_r);
     TokenType isOperation(std::string operation);
@@ -95,7 +107,7 @@ public:
     size_t position_;
     size_t end_line_;
     LexerError error_;
-    TokensWithErrors TokenizeString(std::string &tokenize_string);
+    TokensWithErrors makeTokensGreatAgain(std::string &tokenize_string);
 };
 
 #endif // INCLUDE_LEXER_H

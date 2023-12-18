@@ -11,8 +11,8 @@
 
 std::vector<interpreter::Instr> Parser::GetProgram() { return program_; }
 
-interpreter::Instr Parser::parse_3(uint8_t opcode, uint32_t source_1,
-                                   uint32_t source_2)
+interpreter::Instr Parser::parseOpWith2Args(uint8_t opcode, uint32_t source_1,
+                                            uint32_t source_2)
 {
 
     interpreter::Instr value = 0;
@@ -46,7 +46,6 @@ interpreter::Instr Parser::parse_3(uint8_t opcode, uint32_t source_1,
     case OpCode::MOV_REG_TO_REG:
         value |= OpCode::MOV_REG_TO_REG;
         break;
-    // --------------------------------
     case OpCode::FADD:
         value |= OpCode::FADD;
         break;
@@ -73,7 +72,7 @@ interpreter::Instr Parser::parse_3(uint8_t opcode, uint32_t source_1,
     return value;
 }
 
-interpreter::Instr Parser::parse_2(uint8_t opcode, uint32_t source)
+interpreter::Instr Parser::parseOpWith1Args(uint8_t opcode, uint32_t source)
 {
     interpreter::Instr value = 0;
     switch (opcode)
@@ -118,7 +117,7 @@ interpreter::Instr Parser::parse_2(uint8_t opcode, uint32_t source)
     return value;
 }
 
-interpreter::Instr Parser::parse_1(uint8_t opcode)
+interpreter::Instr Parser::parseOpWithNoArgs(uint8_t opcode)
 {
     interpreter::Instr value = 0;
     switch (opcode)
@@ -136,12 +135,12 @@ interpreter::Instr Parser::parse_1(uint8_t opcode)
     }
 }
 
-opcode_type Parser::TokenToOpcode(TokenType id)
+interpreter::OpCode Parser::tokenTypeToOpcode(TokenType id)
 {
     return static_cast<OpCode>(id);
 }
 
-regs_type Parser::TokenToReg(TokenType id)
+interpreter::RegID Parser::tokenTypeToReg(TokenType id)
 {
     if (id > vm_numbers::OPCODE_NUM - 1 && id < vm_numbers::OPCODE_NUM + vm_numbers::REG_NUM - 1)
     {
@@ -153,57 +152,91 @@ regs_type Parser::TokenToReg(TokenType id)
         // std::cout << id - vm_numbers::OPCODE_NUM - vm_numbers::REG_NUM << std::endl;
         return static_cast<FRegisters>(id - vm_numbers::OPCODE_NUM - vm_numbers::REG_NUM);
     }
-    return static_cast<regs_type>(TokenType::BAD_TOKEN);
+    return static_cast<interpreter::RegID>(TokenType::BAD_TOKEN);
+}
+
+uint64_t Parser::tokenTypeToNumber(TokenType id){
+    switch (id)
+    {
+    case TokenType::ID_NUMBER_0:
+        return 0;
+    case TokenType::ID_NUMBER_1:
+        return 1;
+    case TokenType::ID_NUMBER_2:
+        return 2;
+    case TokenType::ID_NUMBER_3:
+        return 3;
+    case TokenType::ID_NUMBER_4:
+        return 4;
+    case TokenType::ID_NUMBER_5:
+        return 5;
+    case TokenType::ID_NUMBER_6:
+        return 6;
+    case TokenType::ID_NUMBER_7:
+        return 7;
+    case TokenType::ID_NUMBER_8:
+        return 8;
+    case TokenType::ID_NUMBER_9:
+        return 9;
+    default:
+        std::cerr << "Error. Invalid digit." << std::endl;
+        std::abort();
+    }
 }
 
 void Parser::parseProgram(std::ifstream &file)
 {
     Lexer lexer;
     std::string line;
-    std::vector<uint8_t> words_ = {};
+    std::vector<uint8_t> curr_set_to_instruction = {};
     while (std::getline(file, line))
     {
-        std::pair<std::vector<Token>, LexerError> tokens_and_errors = lexer.TokenizeString(line);
+        std::pair<std::vector<Token>, LexerError> tokens_and_errors = lexer.makeTokensGreatAgain(line);
+        if (tokens_and_errors.second.error_ != ErrorType::STATUS_OK)
+        {
+            std::cerr << "Parser error." << std::endl;
+            return;
+        }
         int len = tokens_and_errors.first.size();
-        int counter = 0;
-        std::cout << "my line is " << line << std::endl;
-        std::cout << " len is " << len << std::endl;
+        int op_number = 0;
         for (int i = 0; i < len; ++i)
         {
-            std::cout << "i = " << i << std::endl;
-            std::cout << "token type = " << tokens_and_errors.first[i].token_type_ << std::endl;
             auto curr_token_type = tokens_and_errors.first[i].token_type_;
-            std::cout << "new token above " << std::endl;
-            if (curr_token_type != TokenType::BAD_TOKEN)
+            if (curr_token_type != TokenType::BAD_TOKEN && curr_token_type < TokenType::ID_NUMBER - vm_numbers::VM_DIGIT_NUM)
             {
-                if (i == 0)
+                if (i == 0) // On the first position always goes an operation name
                 {
-                    words_.push_back(TokenToOpcode(curr_token_type)); // we need togive only inst name without operands
+                    op_number++;
+                    curr_set_to_instruction.push_back(tokenTypeToOpcode(curr_token_type));
                 }
                 else
                 {
-                    // count arguments for future parsing
-                    counter += 1;
-                    std::cout << "Token to reg = " << TokenToReg(curr_token_type) << std::endl;
-                    words_.push_back(TokenToReg(curr_token_type));
+                    // Count arguments for future parsing
+                    op_number++;
+                    curr_set_to_instruction.push_back(tokenTypeToReg(curr_token_type));
                 }
+            }
+            else if (curr_token_type != TokenType::BAD_TOKEN && curr_token_type >= TokenType::ID_NUMBER - vm_numbers::VM_DIGIT_NUM)
+            {
+                op_number++;
+                curr_set_to_instruction.push_back(tokenTypeToNumber(curr_token_type));
             }
         }
 
-        if (counter == 3)
+        if (op_number == 3)
         {
-            program_.push_back(parse_3(words_[words_.size() - 3],
-                                       words_[words_.size() - 2],
-                                       words_[words_.size() - 1]));
+            program_.push_back(parseOpWith2Args(curr_set_to_instruction[curr_set_to_instruction.size() - 3],
+                                                curr_set_to_instruction[curr_set_to_instruction.size() - 2],
+                                                curr_set_to_instruction[curr_set_to_instruction.size() - 1]));
         }
-        else if (counter == 2)
+        else if (op_number == 2)
         {
             program_.push_back(
-                parse_2(words_[words_.size() - 2], words_[words_.size() - 1]));
+                parseOpWith1Args(curr_set_to_instruction[curr_set_to_instruction.size() - 2], curr_set_to_instruction[curr_set_to_instruction.size() - 1]));
         }
-        else if (counter == 1)
+        else if (op_number == 1)
         {
-            program_.push_back(parse_1(words_[words_.size() - 1]));
+            program_.push_back(parseOpWithNoArgs(curr_set_to_instruction[curr_set_to_instruction.size() - 1]));
         }
         else
         {

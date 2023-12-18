@@ -52,16 +52,49 @@ TokenType Lexer::isFloatReg(std::string reg)
                                                               : (float_reg_list.at(reg));
 }
 
-void Lexer::SkipSpace()
+void Lexer::skipSpace()
 {
-    while (!Eol() && isspace(buffer_[position_]) != 0)
+    while (!endOfLine() && isspace(buffer_[position_]) != 0)
     {
         ++position_;
     }
 }
 
 bool Lexer::isQuote(char c) { return c == '"'; }
-bool Lexer::Eol() { return position_ == end_line_; }
+bool Lexer::isDigit(char c)
+{
+    return std::isdigit(static_cast<unsigned char>(c)) != 0;
+}
+
+TokenType Lexer::whichDigit(char c)
+{
+    switch (c)
+    {
+    case '0':
+        return TokenType::ID_NUMBER_0;
+    case '1':
+        return TokenType::ID_NUMBER_1;
+    case '2':
+        return TokenType::ID_NUMBER_2;
+    case '3':
+        return TokenType::ID_NUMBER_3;
+    case '4':
+        return TokenType::ID_NUMBER_4;
+    case '5':
+        return TokenType::ID_NUMBER_5;
+    case '6':
+        return TokenType::ID_NUMBER_6;
+    case '7':
+        return TokenType::ID_NUMBER_7;
+    case '8':
+        return TokenType::ID_NUMBER_8;
+    case '9':
+        return TokenType::ID_NUMBER_9;
+    default:
+        return TokenType::BAD_TOKEN;
+    }
+}
+bool Lexer::endOfLine() { return position_ == end_line_; }
 
 TokenType Lexer::getType(size_t beg, size_t end)
 {
@@ -83,6 +116,11 @@ TokenType Lexer::getType(size_t beg, size_t end)
         return type;
     }
 
+    if (Lexer::isDigit(buffer_[beg]))
+    {
+        return Lexer::whichDigit(buffer_[beg]);
+    }
+
     if (Lexer::isQuote(buffer_[beg]))
     {
         return TokenType::ID_STRING;
@@ -91,7 +129,7 @@ TokenType Lexer::getType(size_t beg, size_t end)
     return TokenType::BAD_TOKEN;
 }
 
-TokensWithErrors Lexer::TokenizeString(std::string &s)
+TokensWithErrors Lexer::makeTokensGreatAgain(std::string &s)
 {
     buffer_ = s;
     position_ = 0;
@@ -99,14 +137,14 @@ TokensWithErrors Lexer::TokenizeString(std::string &s)
     error_ = LexerError();
     tokens_ = {};
 
-    AnalyzeLine();
+    progessSingleLine();
     return std::pair<std::vector<Token>, LexerError>(tokens_, error_);
 }
 
-bool Lexer::LexString()
+bool Lexer::lexString()
 {
     bool is_esc_seq = false;
-    while (!Eol())
+    while (!endOfLine())
     {
         ++position_;
 
@@ -132,7 +170,7 @@ bool Lexer::LexString()
     if (!isQuote(buffer_[position_]))
     {
         error_ = LexerError("no termination for string.", position_,
-                            ErrorType::ERROR_UNEXPECTED_EOL,
+                            ErrorType::ERROR_UNEXPECTED_END_OF_LINE,
                             buffer_);
 
         return false;
@@ -143,9 +181,9 @@ bool Lexer::LexString()
     return true;
 }
 
-void Lexer::LexTokens()
+void Lexer::lexTokens()
 {
-    if (Eol())
+    if (endOfLine())
     {
         return;
     }
@@ -155,7 +193,7 @@ void Lexer::LexTokens()
         --end_line_;
     }
 
-    while (isspace(buffer_[position_] != 0 && !Eol()))
+    while (isspace(buffer_[position_] != 0 && !endOfLine()))
     {
         ++position_;
     }
@@ -163,7 +201,7 @@ void Lexer::LexTokens()
     size_t bound_l = 0;
     size_t bound_r = 0;
 
-    for (int i = 0; !Eol(); ++i)
+    for (int i = 0; !endOfLine(); ++i)
     {
         bound_l = position_;
 
@@ -173,14 +211,14 @@ void Lexer::LexTokens()
         }
         else if (Lexer::isQuote(buffer_[position_]))
         {
-            if (!LexString())
+            if (!lexString())
             {
                 return;
             }
         }
         else
         {
-            while (!Eol() && Lexer::isSpecialSymbol(buffer_[position_]) == TokenType::BAD_TOKEN &&
+            while (!endOfLine() && Lexer::isSpecialSymbol(buffer_[position_]) == TokenType::BAD_TOKEN &&
                    isspace(buffer_[position_]) == 0)
             {
                 ++position_;
@@ -191,7 +229,7 @@ void Lexer::LexTokens()
 
         tokens_.emplace_back(buffer_, bound_l, bound_r, Lexer::getType(bound_l, bound_r));
 
-        while (isspace(buffer_[position_]) != 0 && !Eol())
+        while (isspace(buffer_[position_]) != 0 && !endOfLine())
         {
             ++position_;
         }
@@ -200,10 +238,10 @@ void Lexer::LexTokens()
     return;
 }
 
-void Lexer::AnalyzeLine()
+void Lexer::progessSingleLine()
 {
-    SkipSpace();
-    LexTokens();
+    skipSpace();
+    lexTokens();
 
     return;
 }

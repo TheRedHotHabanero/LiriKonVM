@@ -11,21 +11,8 @@ class ArenaAllocator
 {
 
 public:
-    enum ArenaType
-    {
-        OK,
-        BAD
-    };
-
-    static constexpr size_t DEFAULT_ARENA = 1 << 23; // 10 Mb
-
-    ArenaAllocator(size_t capacity = DEFAULT_ARENA);
+    ArenaAllocator(size_t capacity = vm_numbers::VM_DEFAULT_ARENA);
     ~ArenaAllocator();
-
-    ArenaType getAllocatorType() const
-    {
-        return allocator_;
-    }
 
     size_t getCapacity() const
     {
@@ -40,7 +27,6 @@ public:
     void *allocate(size_t size);
 
 private:
-    ArenaType allocator_{ArenaType::OK};
 
     uint8_t *heap_{nullptr};
     uint8_t *next_allocation_{nullptr};
