@@ -91,9 +91,6 @@ void Interpreter::executeProgram(interpreter::Byte *bytecode)
         std::abort();
     }
 
-    auto &iregisters = runner_->GetIRegs();
-    auto &fregisters = runner_->GetFRegs();
-    // interpreter::IReg &pc = iregisters[vm_numbers::REG_NUM - 1];
     interpreter::IReg *pc = reinterpret_cast<interpreter::IReg *>(frame->regPtr(vm_numbers::REG_NUM - 1));
     Instruction *cur_instr = new Instruction();
     *cur_instr = decoder_->decodeInstruction(executeInstruction(bytecode, *pc));
@@ -105,125 +102,115 @@ void Interpreter::executeProgram(interpreter::Byte *bytecode)
     goto *dispatch_table[cur_instr->GetInstOpcode()];
 
 HANDLE_ADD:
-    // iregisters[IRegisters::ACC] =
-    //     iregisters[cur_instr->reg_id] + iregisters[cur_instr->GetSecondReg()];
     *reinterpret_cast<interpreter::IReg *>(frame->regPtr(IRegisters::ACC)) =
-        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)) + *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->GetSecondReg()));
+        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)) + 
+        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->GetSecondReg()));
     NEXT();
 HANDLE_ADDF:
-    // fregisters[FRegisters::FACC] =
-    //     fregisters[cur_instr->reg_id] + fregisters[cur_instr->GetSecondReg()];
-    *reinterpret_cast<interpreter::IReg *>(frame->regPtr(FRegisters::FACC)) =
-        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)) +
-        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->GetSecondReg()));
+    *reinterpret_cast<interpreter::FReg *>(frame->regPtr(FRegisters::FACC)) =
+        *reinterpret_cast<interpreter::FReg *>(frame->regPtr(cur_instr->reg_id)) +
+        *reinterpret_cast<interpreter::FReg *>(frame->regPtr(cur_instr->GetSecondReg()));
     NEXT();
 HANDLE_SUB:
-    // iregisters[IRegisters::ACC] =
-    //     iregisters[cur_instr->reg_id] - iregisters[cur_instr->GetSecondReg()];
     *reinterpret_cast<interpreter::IReg *>(frame->regPtr(IRegisters::ACC)) =
-        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)) - *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->GetSecondReg()));
+        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)) - 
+        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->GetSecondReg()));
     NEXT();
 HANDLE_SUBF:
-    // fregisters[FRegisters::FACC] =
-    //     fregisters[cur_instr->reg_id] - fregisters[cur_instr->GetSecondReg()];
-    *reinterpret_cast<interpreter::IReg *>(frame->regPtr(FRegisters::FACC)) =
-        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)) -
-        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->GetSecondReg()));
+    *reinterpret_cast<interpreter::FReg *>(frame->regPtr(FRegisters::FACC)) =
+        *reinterpret_cast<interpreter::FReg *>(frame->regPtr(cur_instr->reg_id)) -
+        *reinterpret_cast<interpreter::FReg *>(frame->regPtr(cur_instr->GetSecondReg()));
     NEXT();
 HANDLE_MUL:
-    // iregisters[IRegisters::ACC] =
-    //     iregisters[cur_instr->reg_id] * iregisters[cur_instr->GetSecondReg()];
     *reinterpret_cast<interpreter::IReg *>(frame->regPtr(IRegisters::ACC)) =
-        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)) * *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->GetSecondReg()));
-    NEXT();
-HANDLE_MULF:
-    // fregisters[FRegisters::FACC] =
-    //     fregisters[cur_instr->reg_id] * fregisters[cur_instr->GetSecondReg()];
-    *reinterpret_cast<interpreter::IReg *>(frame->regPtr(FRegisters::FACC)) =
-        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)) *
+        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)) * 
         *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->GetSecondReg()));
     NEXT();
+HANDLE_MULF:
+    *reinterpret_cast<interpreter::FReg *>(frame->regPtr(FRegisters::FACC)) =
+        *reinterpret_cast<interpreter::FReg *>(frame->regPtr(cur_instr->reg_id)) *
+        *reinterpret_cast<interpreter::FReg *>(frame->regPtr(cur_instr->GetSecondReg()));
+    NEXT();
 HANDLE_DIV:
-    if (iregisters[cur_instr->GetSecondReg()] == 0)
+    if (*reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->GetSecondReg())) == 0)
     {
         std::cerr << "Error. Devision by zero." << std::endl;
         return;
     }
-    // iregisters[IRegisters::ACC] =
-    //     iregisters[cur_instr->reg_id] / iregisters[cur_instr->GetSecondReg()];
     *reinterpret_cast<interpreter::IReg *>(frame->regPtr(IRegisters::ACC)) =
-            static_cast<int>(*reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)) / *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->GetSecondReg())));
+            *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)) / 
+            *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->GetSecondReg()));
     NEXT();
 HANDLE_DIVF:
-    if (fregisters[cur_instr->GetSecondReg()] == 0)
+    if (*reinterpret_cast<interpreter::FReg *>(frame->regPtr(cur_instr->GetSecondReg())) == 0)
     {
         std::cerr << "Error. Devision by zero." << std::endl;
         return;
     }
-    // fregisters[FRegisters::FACC] =
-    //     fregisters[cur_instr->reg_id] / fregisters[cur_instr->GetSecondReg()];
-    *reinterpret_cast<interpreter::IReg *>(frame->regPtr(FRegisters::FACC)) =
-            *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)) / *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->GetSecondReg()));
+    *reinterpret_cast<interpreter::FReg *>(frame->regPtr(FRegisters::FACC)) =
+            *reinterpret_cast<interpreter::FReg *>(frame->regPtr(cur_instr->reg_id)) / 
+            *reinterpret_cast<interpreter::FReg *>(frame->regPtr(cur_instr->GetSecondReg()));
     NEXT();
 HANDLE_AND:
-    iregisters[IRegisters::ACC] =
-        iregisters[cur_instr->reg_id] & iregisters[cur_instr->GetSecondReg()];
+    *reinterpret_cast<interpreter::IReg *>(frame->regPtr(IRegisters::ACC)) =
+        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)) & 
+        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->GetSecondReg()));
     NEXT();
 HANDLE_OR:
-    iregisters[IRegisters::ACC] =
-        iregisters[cur_instr->reg_id] | iregisters[cur_instr->GetSecondReg()];
+    *reinterpret_cast<interpreter::IReg *>(frame->regPtr(IRegisters::ACC)) =
+        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)) | 
+        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->GetSecondReg()));
     NEXT();
 HANDLE_XOR:
-    iregisters[IRegisters::ACC] =
-        iregisters[cur_instr->reg_id] ^ iregisters[cur_instr->GetSecondReg()];
+    *reinterpret_cast<interpreter::IReg *>(frame->regPtr(IRegisters::ACC)) =
+        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)) ^ 
+        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->GetSecondReg()));
     NEXT();
 HANDLE_SHL:
-    iregisters[IRegisters::ACC] = iregisters[cur_instr->reg_id]
-                                  << iregisters[cur_instr->GetSecondReg()];
+    *reinterpret_cast<interpreter::IReg *>(frame->regPtr(IRegisters::ACC)) =
+        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)) << 
+        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->GetSecondReg()));
     NEXT();
 HANDLE_SHR:
-    iregisters[IRegisters::ACC] =
-        iregisters[cur_instr->reg_id] >> iregisters[cur_instr->GetSecondReg()];
+    *reinterpret_cast<interpreter::IReg *>(frame->regPtr(IRegisters::ACC)) =
+        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)) >> 
+        *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->GetSecondReg()));
     NEXT();
 HANDLE_NEG:
-    iregisters[IRegisters::ACC] = -iregisters[cur_instr->reg_id];
+    *reinterpret_cast<interpreter::IReg *>(frame->regPtr(IRegisters::ACC)) = - *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id));
     NEXT();
 HANDLE_NEGF:
-    fregisters[FRegisters::FACC] = -fregisters[cur_instr->reg_id];
+    *reinterpret_cast<interpreter::FReg *>(frame->regPtr(FRegisters::FACC)) = - *reinterpret_cast<interpreter::FReg *>(frame->regPtr(cur_instr->reg_id));
     NEXT();
 HANDLE_MOV_IMM_TO_ACC:
-    iregisters[IRegisters::ACC] = cur_instr->imm;
+    *reinterpret_cast<interpreter::IReg *>(frame->regPtr(IRegisters::ACC)) = static_cast<double>(cur_instr->imm);
     NEXT();
 HANDLE_MOV_IMM_TO_ACCF:
-    fregisters[FRegisters::FACC] = static_cast<double>(cur_instr->imm);
+    *reinterpret_cast<interpreter::FReg *>(frame->regPtr(FRegisters::FACC)) = static_cast<double>(cur_instr->imm);
     NEXT();
 HANDLE_MOV_ACC_TO_REG:
-    iregisters[cur_instr->reg_id] = iregisters[IRegisters::ACC];
+    *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)) = *reinterpret_cast<interpreter::IReg *>(frame->regPtr(IRegisters::ACC));
     NEXT();
 HANDLE_MOV_ACC_TO_REGF:
-    // fregisters[cur_instr->reg_id] = fregisters[FRegisters::FACC];
-    *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)) = *reinterpret_cast<interpreter::IReg *>(frame->regPtr(FRegisters::FACC));
+    *reinterpret_cast<interpreter::FReg *>(frame->regPtr(cur_instr->reg_id)) = *reinterpret_cast<interpreter::FReg *>(frame->regPtr(FRegisters::FACC));
     NEXT();
 HANDLE_MOV_REG_TO_REG:
-    // iregisters[cur_instr->reg_id] = iregisters[cur_instr->GetSecondReg()];
     *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)) = *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->GetSecondReg()));
     NEXT();
 HANDLE_MOV_REG_TO_REGF:
-    // fregisters[cur_instr->reg_id] = fregisters[cur_instr->GetSecondReg()];
-    *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)) = *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->GetSecondReg()));
+    *reinterpret_cast<interpreter::FReg *>(frame->regPtr(cur_instr->reg_id)) = *reinterpret_cast<interpreter::FReg *>(frame->regPtr(cur_instr->GetSecondReg()));
     NEXT();
 HANDLE_INPUT:
-    std::cin >> iregisters[cur_instr->reg_id];
+    std::cin >> *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id));
     NEXT();
 HANDLE_INPUTF:
-    std::cin >> fregisters[cur_instr->reg_id];
+    std::cin >> *reinterpret_cast<interpreter::FReg *>(frame->regPtr(cur_instr->reg_id));
     NEXT();
 HANDLE_OUTPUT:
-    std::cout << "Output: " << iregisters[IRegisters::ACC] << std::endl;
-    //  printf("%ld\n", *reinterpret_cast<interpreter::IReg>(frame->regPtr(cur_instr->reg_id)));
+    std::cout << "Output: " << *reinterpret_cast<interpreter::IReg *>(frame->regPtr(IRegisters::ACC)) << std::endl;
     NEXT();
 HANDLE_OUTPUTF:
-    std::cout << "Output: " << fregisters[FRegisters::FACC] << std::endl;
+    std::cout << "Output: " << *reinterpret_cast<interpreter::FReg *>(frame->regPtr(FRegisters::FACC)) << std::endl;
     NEXT();
 HANDLE_RETURN:
     delete frame;
@@ -231,29 +218,25 @@ HANDLE_RETURN:
     delete cur_instr;
     return;
 HANDLE_SIN:
-    // fregisters[FRegisters::FACC] = std::sin(fregisters[cur_instr->reg_id]);
-    *reinterpret_cast<interpreter::IReg *>(frame->regPtr(FRegisters::FACC)) =
-        std::sin(*reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)));
+    *reinterpret_cast<interpreter::FReg *>(frame->regPtr(FRegisters::FACC)) =
+        std::sin(*reinterpret_cast<interpreter::FReg *>(frame->regPtr(cur_instr->reg_id)));
     NEXT();
 HANDLE_COS:
-    // fregisters[FRegisters::FACC] = std::cos(fregisters[cur_instr->reg_id]);
-    *reinterpret_cast<interpreter::IReg *>(frame->regPtr(FRegisters::FACC)) =
-        std::cos(*reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)));
+    *reinterpret_cast<interpreter::FReg *>(frame->regPtr(FRegisters::FACC)) =
+        std::cos(*reinterpret_cast<interpreter::FReg *>(frame->regPtr(cur_instr->reg_id)));
     NEXT();
 HANDLE_SQRT:
-    if (fregisters[cur_instr->reg_id] < 0)
+    if (*reinterpret_cast<interpreter::FReg *>(frame->regPtr(cur_instr->reg_id)) < 0)
     {
         std::cerr << "Error. Expression for sqrt is < 0." << std::endl;
         return;
     }
-    fregisters[FRegisters::FACC] = std::sqrt(fregisters[cur_instr->reg_id]);
+    *reinterpret_cast<interpreter::FReg *>(frame->regPtr(FRegisters::FACC)) = std::sqrt(*reinterpret_cast<interpreter::FReg *>(frame->regPtr(cur_instr->reg_id)));
     NEXT();
 HANDLE_POW:
-    // fregisters[FRegisters::FACC] = std::pow(
-    //     fregisters[cur_instr->reg_id], fregisters[cur_instr->GetSecondReg()]);
-    *reinterpret_cast<interpreter::IReg *>(frame->regPtr(FRegisters::FACC)) =
-        std::pow(*reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)),
-                 *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->GetSecondReg())));
+    *reinterpret_cast<interpreter::FReg *>(frame->regPtr(FRegisters::FACC)) =
+        std::pow(*reinterpret_cast<interpreter::FReg *>(frame->regPtr(cur_instr->reg_id)),
+                 *reinterpret_cast<interpreter::FReg *>(frame->regPtr(cur_instr->GetSecondReg())));
     NEXT();
 HANDLE_INVALID:
     std::cerr << "Error: Unknown opcode " << std::endl;
