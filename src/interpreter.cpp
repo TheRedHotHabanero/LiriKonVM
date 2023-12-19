@@ -289,18 +289,20 @@ HANDLE_POW:
                      frame->regPtr(cur_instr->GetSecondReg())));
     NEXT();
 HANDLE_NEWARR:
+    std::cout << "im in new arr" << std::endl;
     auto arr_ptr = frame->getCurrentFramePtr()->freeMemory(*reinterpret_cast<interpreter::IReg *>(std::get<2>(pool_[cur_instr->imm])));
     Array arr = Array(sizeof(interpreter::IReg), reinterpret_cast<void *>(arr_ptr));
     intptr_t arr_ptr_address = reinterpret_cast<intptr_t>(arr_ptr);
     *reinterpret_cast<interpreter::IReg *>(frame->regPtr(IRegisters::ACC)) = static_cast<interpreter::IReg>(arr_ptr_address);
+    std::cout << "im in new arr END" << std::endl;
     NEXT();
 HANDLE_LOADARR:
-    arr.setValue(*reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)),
-                 *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->GetSecondReg())));
-    NEXT();
-HANDLE_STOREARR:
     *reinterpret_cast<interpreter::IReg *>(frame->regPtr(IRegisters::ACC)) =
         arr.getValue(*reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)));
+    NEXT();
+HANDLE_STOREARR:
+    arr.setValue(*reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->reg_id)),
+                 *reinterpret_cast<interpreter::IReg *>(frame->regPtr(cur_instr->GetSecondReg())));
     NEXT();
 HANDLE_INVALID:
     std::cerr << "Error: Unknown opcode " << std::endl;

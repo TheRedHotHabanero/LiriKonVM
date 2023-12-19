@@ -12,7 +12,7 @@ public:
     ~Array() = default;
 
     int getValue(int index);
-    void setValue(int value, int index);
+    void setValue(int index, int value);
 
     Array(size_t size, void *memory)
     {

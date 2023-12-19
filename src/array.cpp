@@ -16,7 +16,7 @@ int Array::getValue(int index)
   return *reinterpret_cast<char *>(pointer_) + getOffset(index);
 }
 
-void Array::setValue(int value, int index)
+void Array::setValue(int index, int value)
 {
   int *index_pointer = reinterpret_cast<int *>(pointer_) + getOffset(index);
   *index_pointer = value;

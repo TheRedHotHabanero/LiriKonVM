@@ -72,6 +72,7 @@ interpreter::Instr Parser::parseOpWith2Args(uint8_t opcode, uint32_t source_1,
 
 interpreter::Instr Parser::parseOpWith1Args(uint8_t opcode, uint32_t source) {
   interpreter::Instr value = 0;
+  // std::cout << static_cast<int>(opcode) << std::endl;
   switch (opcode) {
   case OpCode::INPUT:
     value |= OpCode::INPUT;
@@ -87,6 +88,14 @@ interpreter::Instr Parser::parseOpWith1Args(uint8_t opcode, uint32_t source) {
     break;
   case OpCode::SQRT:
     value |= OpCode::SQRT;
+    value |= (source << 8);
+    break;
+  case OpCode::NEWARR:
+    value |= OpCode::NEWARR;
+    value |= (source << 8);
+    break;
+  case OpCode::LOADARR:
+    value |= OpCode::LOADARR;
     value |= (source << 8);
     break;
   case OpCode::MOV_IMM_TO_ACC:
@@ -139,8 +148,6 @@ interpreter::RegID Parser::tokenTypeToReg(TokenType id) {
     // then its int reg
     return static_cast<IRegisters>(id - vm_numbers::OPCODE_NUM);
   } else if (id >= vm_numbers::OPCODE_NUM + vm_numbers::REG_NUM - 1) {
-    // std::cout << id - vm_numbers::OPCODE_NUM - vm_numbers::REG_NUM <<
-    // std::endl;
     return static_cast<FRegisters>(id - vm_numbers::OPCODE_NUM -
                                    vm_numbers::REG_NUM);
   }
@@ -203,7 +210,7 @@ void Parser::parseProgram(std::ifstream &file) {
         }
       } else if (curr_token_type != TokenType::BAD_TOKEN &&
                  curr_token_type >=
-                     TokenType::ID_NUMBER - vm_numbers::VM_DIGIT_NUM) {
+                     TokenType::ID_NUMBER - vm_numbers::VM_DIGIT_NUM) {        
         op_number++;
         curr_set_to_instruction.push_back(tokenTypeToNumber(curr_token_type));
       }
