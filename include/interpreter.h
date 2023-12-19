@@ -19,9 +19,7 @@ public:
   std::vector<interpreter::Instr> GetProgram();
   ~Interpreter();
 
-  auto getAllocator() {
-    return *allocator_;
-  }
+  auto getAllocator() { return *allocator_; }
 
 private:
   Decoder *decoder_;

@@ -29,6 +29,7 @@ add_executable(LiriKonVM
 	${CMAKE_SOURCE_DIR}/src/lexer.cpp
 	${CMAKE_SOURCE_DIR}/src/parser.cpp
 	${CMAKE_SOURCE_DIR}/src/allocator.cpp
+	${CMAKE_SOURCE_DIR}/src/frame.cpp
     ${CMAKE_SOURCE_DIR}/src/decoder.cpp
     ${CMAKE_SOURCE_DIR}/src/interpreter.cpp
     ${CMAKE_SOURCE_DIR}/src/main.cpp)

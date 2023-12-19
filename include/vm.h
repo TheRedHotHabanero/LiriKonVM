@@ -5,6 +5,7 @@
 
 namespace vm_numbers {
 
+static constexpr uint64_t VM_DEFAULT_FRAME = 1 << 10; // 1 KiB
 static constexpr uint64_t VM_DEFAULT_ARENA = 1 << 23; // 10 MB
 static constexpr uint64_t VM_DIGIT_NUM = 10;
 static constexpr uint64_t OPCODE_NUM = 31;

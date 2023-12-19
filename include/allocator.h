@@ -18,7 +18,6 @@ public:
   size_t getSize() const { return size_; }
 
   void *allocate(size_t size);
-  
 
 private:
   uint8_t *heap_{nullptr};
