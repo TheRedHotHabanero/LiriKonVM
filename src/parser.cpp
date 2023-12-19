@@ -116,6 +116,16 @@ interpreter::Instr Parser::parseOpWith1Args(uint8_t opcode, uint32_t source) {
     value |= OpCode::FMOV_ACC_TO_REG;
     value |= (source << 8);
     break;
+  case OpCode::CALL:
+    value |= OpCode::CALL;
+    value |= ((source >> 8) & ((1UL << 8) - 1)) << 16;
+    value |= (source & ((1UL << 8) - 1)) << 24;
+    break;
+  case OpCode::LABEL:
+    value |= OpCode::LABEL;
+    value |= ((source >> 8) & ((1UL << 8) - 1)) << 16;
+    value |= (source & ((1UL << 8) - 1)) << 24;
+    break;
   default:
     break;
   }
@@ -133,6 +143,10 @@ interpreter::Instr Parser::parseOpWithNoArgs(uint8_t opcode) {
     return value |= OpCode::OUTPUT;
   case OpCode::FOUTPUT:
     return value |= OpCode::FOUTPUT;
+  case OpCode::RET:
+    return value |= OpCode::RET;
+  case OpCode::END:
+    return value |= OpCode::END;
   default:
     return value |= OpCode::INVALID;
   }

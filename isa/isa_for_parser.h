@@ -32,6 +32,10 @@
   _(NEWARR, "NEWARR")                                                          \
   _(LOADARR, "LOADARR")                                                        \
   _(STOREARR, "STOREARR")                                                      \
+  _(CALL, "CALL")                                                              \
+  _(RET, "RET")                                                                \
+  _(LABEL, "LABEL")                                                            \
+  _(END, "END")                                                                \
   _(INVALID, "INVALID")
 
 #define INT_REGS(_)                                                            \

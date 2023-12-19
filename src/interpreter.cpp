@@ -5,6 +5,8 @@
 #include <memory>
 #include <sstream>
 #include <vector>
+#include <cstring>
+#include <unordered_map>
 
 #include "frame.h"
 #include "array.h"
@@ -89,26 +91,54 @@ void Interpreter::executeProgram(interpreter::Byte *bytecode)
                                      &&HANDLE_NEWARR,
                                      &&HANDLE_LOADARR,
                                      &&HANDLE_STOREARR,
+                                     &&HANDLE_CALL,
+                                     &&HANDLE_RET,
+                                     &&HANDLE_LABEL,
                                      &&HANDLE_INVALID};
-    Frame myFrame = Frame();
-    myFrame.newFrame();
-    auto frame = myFrame.getCurrentFramePtr();
-    // void* current_array = nullptr;
+
+    Frame* frame = new Frame(vm_numbers::VM_DEFAULT_FRAME, nullptr);
+    std::unordered_map<int, int> labels;
+
+    for (int i = 0; static_cast<uint64_t>(i) < vm_numbers::LABELS_COUNT; i++) { labels[i] = 0;}
+
+    //auto frame = myFrame->getCurrentFramePtr();
+    //void* current_array = nullptr;
     if (frame == nullptr)
     {
         std::cerr << "Error. Nullptr frame";
         std::abort();
     }
 
-    interpreter::IReg *pc = reinterpret_cast<interpreter::IReg *>(
-        frame->regPtr(vm_numbers::REG_NUM - 1));
+    interpreter::IReg pc = (frame->getPC());
+
+    //1st round
     Instruction *cur_instr = new Instruction();
-    *cur_instr = decoder_->decodeInstruction(executeInstruction(bytecode, *pc));
+    *cur_instr = decoder_->decodeInstruction(executeInstruction(bytecode, pc));
+    
+    while (cur_instr->GetInstOpcode() != OpCode::END)
+    {
+        if (cur_instr->GetInstOpcode() == OpCode::LABEL)
+        {
+            if (static_cast<uint64_t>(cur_instr->imm) > vm_numbers::LABELS_COUNT)
+            {
+                std::cerr << "Error. Exceeded maximum labels amount";
+                std::abort();   
+            }
+        labels[cur_instr->imm] = pc;
+        }
+        pc += 4;
+        *cur_instr = decoder_->decodeInstruction(executeInstruction(bytecode, pc));
+    }
+
+    //2nd round
+    pc = (frame->getPC());
+    *cur_instr = decoder_->decodeInstruction(executeInstruction(bytecode, pc));
     goto *dispatch_table[cur_instr->GetInstOpcode()];
 
-#define NEXT()                                                                   \
-    *pc += 4;                                                                    \
-    *cur_instr = decoder_->decodeInstruction(executeInstruction(bytecode, *pc)); \
+#define NEXT()                                                                  \
+    pc += 4;                                                                    \
+    frame->setPC(pc);                                                           \
+    *cur_instr = decoder_->decodeInstruction(executeInstruction(bytecode, pc)); \
     goto *dispatch_table[cur_instr->GetInstOpcode()];
 
 HANDLE_ADD:
@@ -307,4 +337,35 @@ HANDLE_STOREARR:
 HANDLE_INVALID:
     std::cerr << "Error: Unknown opcode " << std::endl;
     exit(1);
+HANDLE_CALL:
+    Frame* next_frame = new Frame(vm_numbers::VM_DEFAULT_FRAME, frame);
+    next_frame->setPC(labels[cur_instr->imm]);
+    std::memcpy(reinterpret_cast<void*>(next_frame->getStartMem()), 
+                reinterpret_cast<interpreter::FReg *>(frame->regPtr(FRegisters::FACC)), sizeof(interpreter::FReg));
+
+    frame = next_frame;
+    pc = frame->getPC();
+    NEXT();
+HANDLE_RET:
+    if (frame->prev_frame_ == nullptr)
+    {
+        std::cerr << "Error. Nullptr return frame";
+        std::abort();
+    }
+    std::memcpy(reinterpret_cast<void*>(frame->prev_frame_->getStartMem()), 
+                reinterpret_cast<interpreter::FReg *>(frame->regPtr(FRegisters::FACC)), sizeof(interpreter::FReg));
+
+    Frame* temp_frame = frame->prev_frame_;
+    delete(frame);
+    frame = temp_frame;
+    pc = frame->getPC();
+    NEXT();
+HANDLE_LABEL:
+    if (static_cast<uint64_t>(cur_instr->imm) > vm_numbers::LABELS_COUNT)
+    {
+        std::cerr << "Error. Exceeded maximum labels amount";
+        std::abort();   
+    }
+    labels[cur_instr->imm] = pc;
+    NEXT();
 }

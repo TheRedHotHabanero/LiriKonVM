@@ -3,11 +3,6 @@
 
 #include <iostream>
 
-void Frame::newFrame() {
-  Frame *new_frame = new Frame();
-  frames_.push_back(new_frame);
-  state_frame_ = new_frame;
-}
 
 void *Frame::regPtr(size_t reg_id) {
   return reinterpret_cast<void *>(start_frame_ + (reg_id * sizeof(int)));
