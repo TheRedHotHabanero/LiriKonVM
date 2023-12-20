@@ -2,8 +2,8 @@
 #define INCLUDE_INTERPRETER_H
 
 #include <fstream>
-#include <vector>
 #include <tuple>
+#include <vector>
 
 #include "allocator.h"
 #include "decoder.h"
@@ -27,7 +27,7 @@ private:
   Runner *runner_;
   Parser *parser_;
   std::unique_ptr<ArenaAllocator> allocator_;
-  std::vector<std::tuple<double, size_t, void*>> pool_;
+  std::vector<std::tuple<double, size_t, void *>> pool_;
 };
 
 #endif // INCLUDE_INTERPRETER_H

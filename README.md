@@ -1,5 +1,6 @@
 # LiriKonVM
 VM course tasks. In collaboration with Maxim Konoplia
+<image src="vm.png">
 
 ## How to run
 

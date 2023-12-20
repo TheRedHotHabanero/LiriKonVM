@@ -228,7 +228,7 @@ void Parser::parseProgram(std::ifstream &file) {
         }
       } else if (curr_token_type != TokenType::BAD_TOKEN &&
                  curr_token_type >=
-                     TokenType::ID_NUMBER - vm_numbers::VM_DIGIT_NUM) {        
+                     TokenType::ID_NUMBER - vm_numbers::VM_DIGIT_NUM) {
         op_number++;
         curr_set_to_instruction.push_back(tokenTypeToNumber(curr_token_type));
       }
