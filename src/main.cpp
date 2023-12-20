@@ -16,7 +16,7 @@ int main()
     return 0;
   } 
   else if (prog_num == 2) {
-    const std::string prog_name = "../examples/call_test.bin";
+    const std::string prog_name = "../examples/array.bin";
     Interpreter *interpreter = new Interpreter();
     interpreter->loadProgram(prog_name);
     std::vector<interpreter::Instr> program = interpreter->GetProgram();

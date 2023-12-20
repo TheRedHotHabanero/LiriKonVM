@@ -59,6 +59,9 @@ interpreter::Instr Parser::parseOpWith2Args(uint8_t opcode, uint32_t source_1,
   case OpCode::FMOV_REG_TO_REG:
     value |= OpCode::FMOV_REG_TO_REG;
     break;
+  case OpCode::STOREARR:
+    value |= OpCode::STOREARR;
+    break;
   case OpCode::POW:
     value |= OpCode::POW;
     break;
@@ -92,7 +95,8 @@ interpreter::Instr Parser::parseOpWith1Args(uint8_t opcode, uint32_t source) {
     break;
   case OpCode::NEWARR:
     value |= OpCode::NEWARR;
-    value |= (source << 8);
+    value |= ((source >> 8) & ((1UL << 8) - 1)) << 16;
+    value |= (source & ((1UL << 8) - 1)) << 24;
     break;
   case OpCode::LOADARR:
     value |= OpCode::LOADARR;

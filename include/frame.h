@@ -22,8 +22,6 @@ public:
 
   ~Frame() { delete[] reinterpret_cast<uint8_t *>(start_frame_); }
 
-  Frame *getCurrentFramePtr() { return state_frame_; }
-
   void newFrame(Frame* prev_frame = nullptr);
 
   void *regPtr(size_t reg_id);
@@ -39,7 +37,6 @@ public:
   int *getStartMem() {return start_frame_;}
 
 private:
-  Frame *state_frame_;
   int *start_frame_;
   int *current_frame_;
   int *end_;
